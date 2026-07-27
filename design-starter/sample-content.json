@@ -1,0 +1,35 @@
+{
+  "productName": "Aster Merino Crew Knit",
+  "highlights": [
+    {
+      "type": "shipping",
+      "title": "Free 2-day delivery",
+      "body": "Order before 4pm and it ships today. Free returns within 30 days.",
+      "icon": "truck"
+    },
+    {
+      "type": "guarantee",
+      "title": "2-year quality guarantee",
+      "body": "If a seam fails or the knit pills abnormally, we replace it. No questions.",
+      "icon": "shield"
+    },
+    {
+      "type": "social_proof",
+      "title": "Loved by 3,100+ buyers",
+      "body": "Rated 4.8 out of 5. 94% of reviewers say it kept its shape after washing.",
+      "icon": "star"
+    },
+    {
+      "type": "material",
+      "title": "100% traceable merino",
+      "body": "Ethically sourced, mulesing-free wool. Naturally breathable and odour-resistant.",
+      "icon": "leaf"
+    },
+    {
+      "type": "fit",
+      "title": "True to size",
+      "body": "78% of buyers bought their usual size. Runs slightly long in the sleeve.",
+      "icon": "ruler"
+    }
+  ]
+}

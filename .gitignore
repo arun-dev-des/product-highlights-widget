@@ -1,0 +1,16 @@
+# Archives
+*.zip
+
+# Assignment brief — kept locally for reference, not part of the deliverable
+design-engineer-takehome-assignment-brief.md
+
+# OS
+.DS_Store
+
+# Dependencies / build output
+node_modules/
+dist/
+build/
+
+# Logs
+*.log

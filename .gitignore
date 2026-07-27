@@ -1,6 +1,10 @@
 # Archives
 *.zip
 
+# Reference media kept locally, not part of the deliverable
+*.mp4
+*.mov
+
 # Assignment brief — kept locally for reference, not part of the deliverable
 design-engineer-takehome-assignment-brief.md
 

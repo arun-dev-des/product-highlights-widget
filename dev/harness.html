@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Highlights — dev harness</title>
+  <style>
+    body { margin: 0; font: 15px/1.5 ui-sans-serif, system-ui, sans-serif;
+           color: #1c1c1c; background: #fdfcf9; }
+    .wrap { max-width: 620px; margin: 0 auto; padding: 32px 24px 96px; }
+    h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+    .lede { color: #6b6b6b; margin: 0 0 32px; }
+    section { margin: 0 0 40px; }
+    h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+         color: #8a8a8a; font-weight: 600; margin: 0 0 4px; }
+    .note { color: #6b6b6b; font-size: 13px; margin: 0 0 12px; }
+    .expect { color: #8a8a8a; font-size: 12px; margin: 8px 0 0; font-style: italic; }
+    button { font: inherit; padding: 8px 14px; border: 1px solid #d8d2c6;
+             border-radius: 6px; background: #fff; cursor: pointer; }
+    button:hover { background: #f4f1ea; }
+    .bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+    .frame { border: 1px dashed #ddd6c8; border-radius: 6px; padding: 0 16px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Product Highlights — dev harness</h1>
+    <p class="lede">Replay the emphasis sweep and check how the widget degrades.</p>
+
+    <section>
+      <h2>Full payload</h2>
+      <p class="note">Five items, one flagged with <code>emphasis</code>.</p>
+      <div class="bar">
+        <button id="replay">Replay</button>
+        <button id="slow">Replay at 1/4 speed</button>
+      </div>
+      <div class="frame"><div id="full"></div></div>
+      <p class="expect">Rows stagger in, then a warm sweep crosses “Loved by 3,100+ buyers” once, left to right.</p>
+    </section>
+
+    <section>
+      <h2>Three items</h2>
+      <p class="note">Should lay out side by side where there is room.</p>
+      <div class="frame"><div id="three"></div></div>
+    </section>
+
+    <section>
+      <h2>One item</h2>
+      <div class="frame"><div id="one"></div></div>
+    </section>
+
+    <section>
+      <h2>Missing body, unknown icon, very long copy</h2>
+      <p class="note">Resilience: none of these should break layout.</p>
+      <div class="frame"><div id="ragged"></div></div>
+      <p class="expect">Row one is title-only. Row two falls back to a neutral glyph. Row three wraps rather than clipping.</p>
+    </section>
+
+    <section>
+      <h2>Empty array</h2>
+      <p class="note">Should render nothing at all — no box, no rule.</p>
+      <div class="frame"><div id="empty"></div></div>
+      <p class="expect">The dashed frame below should be flat and empty.</p>
+    </section>
+
+    <section>
+      <h2>Malformed payload</h2>
+      <p class="note">Items that are strings, nulls, and objects with no title.</p>
+      <div class="frame"><div id="broken"></div></div>
+      <p class="expect">Only the one valid item renders. One console warning at most, no exception.</p>
+    </section>
+  </div>
+
+  <script type="module">
+    import { mount, _reset } from '../widget/product-highlights.js';
+
+    const full = await fetch('../design-starter/sample-content.json').then((r) => r.json());
+
+    mount('#full', { content: full });
+    // Suppressed on the rest so the toast fires deterministically from one place.
+    mount('#three', { content: { highlights: full.highlights.slice(0, 3) }, toast: false });
+    mount('#one', { content: { highlights: full.highlights.slice(0, 1) }, toast: false });
+
+    mount('#ragged', { toast: false, content: { highlights: [
+      { title: 'Title with no body at all', icon: 'shield' },
+      { title: 'Unrecognised icon name', body: 'Falls back to a neutral glyph.', icon: 'spaceship' },
+      { title: 'A considerably longer title than any merchant should reasonably send',
+        body: 'And a body to match. '.repeat(12), icon: 'leaf' },
+    ] } });
+
+    mount('#empty', { toast: false, content: { highlights: [] } });
+
+    mount('#broken', { toast: false, content: { highlights: [
+      'not an object', null, 42, { body: 'no title, so skipped' },
+      { title: 'The only valid item', body: 'Everything else was dropped.', icon: 'star' },
+    ] } });
+
+    // Re-mounting replays the entrance, the toast and the sweep from the top.
+    const replay = (rate) => {
+      _reset();
+      document.querySelector('#full').shadowRoot?.replaceChildren();
+      mount('#full', { content: full }).then(() => {
+        if (rate === 1) return;
+        setTimeout(() => {
+          const roots = [document.querySelector('#full').shadowRoot,
+                         document.querySelector('[data-product-highlights="toast"]')?.shadowRoot];
+          for (const r of roots) {
+            if (!r) continue;
+            for (const el of r.querySelectorAll('*')) {
+              el.getAnimations?.().forEach((a) => { a.playbackRate = rate; });
+            }
+          }
+        }, 60);
+      });
+    };
+
+    document.querySelector('#replay').onclick = () => replay(1);
+    document.querySelector('#slow').onclick = () => replay(0.25);
+  </script>
+</body>
+</html>

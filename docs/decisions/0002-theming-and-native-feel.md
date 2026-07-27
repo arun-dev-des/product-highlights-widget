@@ -1,9 +1,16 @@
 # ADR 0002 — Theming and native feel
 
-- **Status:** Proposed
+- **Status:** Accepted — partially implemented, see below
 - **Date:** 2026-07-28
 - **Applies to:** The embeddable product highlights widget
 - **Related:** [ADR 0001 — Style isolation via Shadow DOM](./0001-style-isolation.md)
+
+> **Implementation status.** Of the four cascade layers, the widget ships layer 2
+> (CSS custom properties) and layer 4 (crafted defaults). Layer 1 (a `theme`
+> block in the content payload) and layer 3 (bounded inference) are not built.
+> The contrast gate below is consequently unimplemented: theming currently flows
+> through custom properties, which the browser applies directly, leaving nothing
+> to intercept. It becomes necessary the moment layer 1 is accepted.
 
 ---
 

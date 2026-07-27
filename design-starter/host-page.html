@@ -51,6 +51,10 @@
       grid-template-columns: 1fr 1fr;
       gap: 48px;
       margin-top: 24px;
+      /* Grid items stretch to the row height by default, which overrides the
+         gallery's aspect-ratio as soon as the details column grows taller.
+         Sizing to content instead lets the 4/5 ratio hold. */
+      align-items: start;
     }
 
     .gallery {
@@ -128,15 +132,16 @@
         <h1 class="title">Aster Merino Crew Knit</h1>
         <p class="price">$148.00</p>
 
-        <!-- ============================================================= -->
-        <!-- Mount your widget somewhere sensible on this page. This slot   -->
-        <!-- is a suggestion; you may place it wherever it works best.      -->
-        <div id="widget-slot"></div>
-        <!-- ============================================================= -->
-          <p>mount slot suggestion place 1</p>
         <div class="card">
           <button class="btn">Add to cart</button>
         </div>
+
+        <!-- ============================================================= -->
+        <!-- Mounted below the buy action: these highlights answer the      -->
+        <!-- reasons a shopper hesitates, so they belong at the moment the  -->
+        <!-- decision is made, without pushing the CTA down the page.       -->
+        <div id="widget-slot"></div>
+        <!-- ============================================================= -->
 
         <p class="desc">
           A midweight crew knit in traceable merino wool. Designed to be worn year round,
@@ -146,7 +151,9 @@
     </div>
   </main>
 
-  <p>mount slot suggestion place 2</p>
-  <!-- Load your widget here, however you choose to build it. -->
+  <script type="module"
+          src="../widget/product-highlights.js"
+          data-mount="#widget-slot"
+          data-content="./sample-content.json"></script>
 </body>
 </html>

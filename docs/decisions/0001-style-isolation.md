@@ -1,6 +1,6 @@
 # ADR 0001 — Style isolation via Shadow DOM
 
-- **Status:** Proposed
+- **Status:** Accepted — implemented in `widget/product-highlights.js`
 - **Date:** 2026-07-28
 - **Applies to:** The embeddable product highlights widget
 

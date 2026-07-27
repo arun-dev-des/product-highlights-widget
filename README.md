@@ -3,12 +3,12 @@
 An embeddable widget that surfaces key product facts — delivery, guarantee,
 social proof, material, fit — across a merchant's product page.
 
-One script, one payload, three presentations. Each highlight declares where it
+One script, one payload, four presentations. Each highlight declares where it
 belongs and the widget renders it there: an inline list beside the buy action, a
-badge on the product image, a transient toast for the item worth a moment of
-attention.
+rating panel with a score and stars, a badge on the product image, and a
+transient toast for the item worth a moment of attention.
 
-8.6 KB gzipped, no dependencies, no build step, everything inside shadow roots.
+11.4 KB gzipped, no dependencies, no build step, everything inside shadow roots.
 
 ---
 
@@ -56,6 +56,7 @@ await mount('#highlights', {
   label: 'Why shop with us',   // optional accessible name for the list
   toast: false,                // optional: keep toast items in the list
   badges: false,               // optional: keep badge items in the list
+  rating: false,               // optional: keep the rating item in the list
 });
 ```
 
@@ -90,21 +91,30 @@ never throws.
 |---|---|---|
 | `title` | yes | Items without one are skipped |
 | `body` | no | Absent renders a title-only row |
-| `icon` | no | `truck`, `shield`, `star`, `leaf`, `ruler`; anything else falls back to a neutral glyph |
-| `placement` | no | `list` *(default)*, `toast`, `badge` |
+| `icon` | no | `truck`, `shield`, `star`, `leaf`, `ruler`, `avatars`; anything else falls back to a neutral glyph |
+| `placement` | no | `list` *(default)*, `rating`, `toast`, `badge` |
 | `anchor` | for `badge` | A CSS selector on the host page |
+| `rating` / `scale` | for `rating` | Numbers, not prose. Stars are drawn from these; `scale` defaults to 5 |
+| `messages` | no | Extra lines the toast cycles through after its title |
 | `type` | no | Unused by the renderer; preserved for merchant-side categorisation |
 
 **Every item always renders.** Anything that cannot be placed falls back to the
 list — a selector that matches nothing, an invalid selector, a second item
-competing for the toast, an unrecognised placement, a suppressed surface. The
-payload renders in full on any page, however wrong the configuration.
+competing for the toast or the rating panel, a `rating` placement with no usable
+score, an unrecognised placement, a suppressed surface. The payload renders in
+full on any page, however wrong the configuration.
+
+The score is **structured data, never parsed out of the sentence beside it.**
+`"Rated 4.8 out of 5"` is prose; a regex over prose breaks on `4,8`, on `4.8/5`,
+on a merchant who spells it out. Same failure class as deriving placement from
+`type` — inferring structure that was never declared. The star fill is honest as
+a result: 4.8 of 5 renders as four and four-fifths stars, not rounded up.
 
 ### Theming
 
-Nine optional CSS custom properties, shared across all three shadow roots. Set
-them on the mount element from the merchant's own stylesheet; no knowledge of
-the widget's internals is required.
+Nine optional CSS custom properties, shared across every shadow root. Set them
+on the mount element from the merchant's own stylesheet; no knowledge of the
+widget's internals is required.
 
 ```css
 #highlights {
@@ -159,15 +169,16 @@ have, and force a shopper worried about sizing past four irrelevant panels to
 reach the one that concerns them. Sequential presentation is honest only when the
 content is sequential.
 
-### Three placements, because the items are not peers
+### Four placements, because the items are not peers
 
 Fully argued in [ADR 0003](docs/decisions/0003-declared-placement.md).
 
 Delivery, guarantee and fit answer purchase hesitation, so they sit beside the
 buy action. *Traceable merino* is a product attribute, so it badges the product
-image. *Loved by 3,100+ buyers* is social proof, so it gets a moment of its own.
-Rendering all five as identical rows treated content with different roles as
-though it had one, and pushed the details column well past the product image.
+image. The rating is a score, so it gets a panel built for a score. *Loved by
+3,100+ buyers* is social proof, so it gets a moment of its own. Rendering all of
+them as identical rows treated content with different roles as though it had one,
+and pushed the details column well past the product image.
 
 Placement is **declared in the payload, never derived from `type`** — the
 merchant knows where their product image is and we never do. `type === 'material'
@@ -195,14 +206,21 @@ Three moments, each with a job:
   eye down the column in reading order.
 - **The badge fades down** shortly after, so it is noticed as arriving rather than
   as having always been there.
-- **A warm sweep crosses the toast's title** once, left to right over 850ms. The
-  easing is **linear on purpose**: an eased curve makes the highlight race across
-  the words and then crawl, so most of the duration renders no visible change. A
-  travelling light moves at a constant speed.
+- **A warm sweep crosses the toast's first line** once, left to right over 850ms.
+  The easing is **linear on purpose**: an eased curve makes the highlight race
+  across the words and then crawl, so most of the duration renders no visible
+  change. A travelling light moves at a constant speed.
+- **The toast then scrolls up through its messages and back**, resting on the line
+  it opened with. It cycles exactly once. A message that loops indefinitely reads
+  as nagging; one that shows a second line and returns reads as an aside. The
+  rotator is locked to its widest and tallest line before the frames leave the
+  flow, so the pill never resizes mid-turn.
 
-Nothing loops. Nothing repeats. Under `prefers-reduced-motion` none of it runs —
+Nothing loops indefinitely. Under `prefers-reduced-motion` none of it runs —
 reduced motion asks for less movement, not less content, so every surface still
-appears, it simply arrives rather than moves.
+appears, it simply arrives rather than moves, and the toast shows its first line
+only. Nothing is lost: every rotating line also lives in a static surface
+elsewhere on the page.
 
 ---
 
@@ -210,8 +228,8 @@ appears, it simply arrives rather than moves.
 
 ### Stack: none
 
-Vanilla JavaScript, one ES module, no dependencies, no build step. **24.6 KB raw,
-8.6 KB gzipped, unminified.**
+Vanilla JavaScript, one ES module, no dependencies, no build step. **34 KB raw,
+11.4 KB gzipped, unminified.**
 
 A framework was considered and rejected on fit. This is third-party code running
 on other people's storefronts; every kilobyte is spent from a budget belonging to

@@ -38,7 +38,7 @@ this decision has to answer for.
 
 ## Decision
 
-**One script, one payload, one codebase — three presentations. Each highlight
+**One script, one payload, one codebase — four presentations. Each highlight
 declares where it belongs; the widget renders it there.**
 
 ```json
@@ -50,15 +50,16 @@ declares where it belongs; the widget renders it there.**
 | Placement | Presentation |
 |---|---|
 | `list` *(default)* | The inline list beneath the buy action |
-| `toast` | A transient pill pinned to the viewport, dismissed after 7s, on click, or on Escape |
+| `rating` | A score panel: the claim, a hairline, then a numeral and stars |
+| `toast` | A transient pill pinned to the viewport, cycling through its `messages` and back, then dismissing on a timer, on click, or on Escape |
 | `badge` | A small pill anchored inside an element the merchant names |
 
-Two properties make this a single component rather than three:
+Two properties make this a single component rather than four:
 
 - **One integration.** One script tag, one `mount()` call, one payload, one set of
-  theme tokens shared across all three shadow roots. A merchant installs it once.
-- **One data model.** The presentations are three renderings of the same item
-  shape, not three features. Adding a fourth is a renderer, not a product.
+  theme tokens shared across every shadow root. A merchant installs it once.
+- **One data model.** The presentations are four renderings of the same item
+  shape, not four features. Adding a fifth is a renderer, not a product.
 
 ### The rule that makes it safe
 
@@ -66,7 +67,9 @@ Two properties make this a single component rather than three:
 
 - `anchor` matches nothing → list
 - `anchor` is an invalid selector → caught, list
-- A second item requests `toast` → the first wins, the rest go to the list
+- A second item requests `toast` or `rating` → the first wins, the rest go to the list
+- `rating` carries no usable score → list, because a panel with no stars in it is
+  just a sentence in a box
 - `placement` is absent or unrecognised → list
 - A surface is suppressed via options → its items **return to the list**
 
@@ -128,15 +131,22 @@ evaluate, and is the literal shape the brief warns against.
 - Merchants control placement without a release from us, and control it in the
   same payload that already carries the content.
 - Every misconfiguration degrades to a working page rather than a broken one.
-- The theme token contract from ADR 0002 is shared across all three shadow roots,
-  so re-theming still means setting custom properties once.
+- The theme token contract from ADR 0002 is shared across every shadow root, so
+  re-theming still means setting custom properties once.
 
 ### Negative — accepted
 
-- **This is more surface than one list.** Three presentations mean three sets of
-  styles, three entrance behaviours and three sets of edge cases. It is a real
+- **This is more surface than one list.** Four presentations mean four sets of
+  styles, four entrance behaviours and four sets of edge cases. It is a real
   cost, and the honest defence is that the presentations are small, share their
   tokens and item shape, and each degrades to the same fallback.
+
+- **The toast rotates, which is motion that repeats.** It cycles once through its
+  declared `messages` and returns to the line it opened with, then stops. A
+  message that loops indefinitely reads as nagging; one that shows a second line
+  and comes back reads as an aside. Under reduced motion it does not rotate at
+  all, and nothing is lost — every rotating line also lives in a static surface
+  elsewhere on the page.
 
 - **The badge writes to the merchant's element.** An absolutely positioned child
   needs a containing block, so `showBadge()` sets `position: relative` on the

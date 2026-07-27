@@ -3,12 +3,13 @@
  * ------------------
  * An embeddable, self-contained set of product highlights for ecommerce pages.
  *
- * One script, one payload, three presentations. Each highlight declares where
+ * One script, one payload, four presentations. Each highlight declares where
  * it belongs and the widget renders it there:
  *
- *   "list"   the inline list beneath the buy action  (default)
- *   "toast"  a transient pill pinned to the viewport
- *   "badge"  a small pill anchored inside an element the merchant names
+ *   "list"    the inline list beneath the buy action  (default)
+ *   "rating"  a score panel: a claim, a hairline, a numeral and stars
+ *   "toast"   a transient pill pinned to the viewport, cycling its messages
+ *   "badge"   a small pill anchored inside an element the merchant names
  *
  * Placement is declared in the data, never derived from `type`. The merchant
  * knows where their product image is; we never do. And anything that cannot be
@@ -55,6 +56,13 @@ const ICONS = {
   ruler:
     '<rect x="2.5" y="8" width="19" height="8" rx="1"/>' +
     '<path d="M7 8v3M11 8v4M15 8v3M19 8v4"/>',
+  // Three overlapping avatars. The two behind are drawn as major arcs that
+  // stop at their neighbour's edge rather than as full circles knocked out
+  // with a fill, so the overlap reads correctly on any background.
+  avatars:
+    '<path d="M9.25 8.44A4.5 4.5 0 1 0 9.25 15.56"/>' +
+    '<path d="M14.75 8.44A4.5 4.5 0 1 0 14.75 15.56"/>' +
+    '<circle cx="17.5" cy="12" r="4.5"/>',
   // Shown when a merchant sends an icon name we do not recognise. Never a
   // broken image, never an empty gap.
   _fallback: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11.5v4.5M12 8h.01"/>',
@@ -63,8 +71,9 @@ const ICONS = {
 /* -------------------------------------------------------------------------
  * Shared theme tokens
  *
- * The three presentations render in three separate shadow roots, so the token
- * block is declared once here and injected into each.
+ * The four presentations render across three shadow roots — the list and the
+ * rating panel share the mount's — so the token block is declared once here and
+ * injected into each.
  * ---------------------------------------------------------------------- */
 const TOKENS = `
   --hl-surface: transparent;
@@ -173,6 +182,82 @@ const LIST_STYLES = `
   text-wrap: pretty;
 }
 
+/* --- Rating panel -------------------------------------------------------- */
+
+/* A claim on the left, the score on the right, a hairline between. The score is
+   structured data, never parsed out of the sentence — "Rated 4.8 out of 5" is
+   prose, and scraping numbers from prose is the same mistake as deriving
+   placement from type. */
+.rating {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--hl-space) * 4);
+  padding: calc(var(--hl-space) * 3.5) calc(var(--hl-space) * 4);
+  margin-bottom: calc(var(--hl-space) * 3);
+  border: 1px solid var(--hl-border);
+  border-radius: var(--hl-radius);
+}
+
+.rating-claim {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--hl-ink);
+  text-wrap: pretty;
+}
+
+.rating-score {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding-left: calc(var(--hl-space) * 4);
+  border-left: 1px solid var(--hl-border);
+}
+
+.rating-value {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--hl-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Two stacked rows of the same five glyphs; the filled row is clipped to the
+   score, so 4.8 of 5 renders as four and four-fifths stars rather than being
+   rounded away. */
+.stars { position: relative; display: block; height: 11px; }
+.stars-row { display: flex; gap: 1.5px; height: 11px; }
+.stars-row svg { display: block; width: 11px; height: 11px; }
+.stars-track { color: var(--hl-border); }
+.stars-fill {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: var(--hl-ink);
+}
+.stars-fill .stars-row { width: max-content; }
+
+/* Below roughly 22rem the two halves stop fitting side by side. */
+@media (max-width: 22rem) {
+  .rating { flex-direction: column; align-items: flex-start; gap: calc(var(--hl-space) * 2.5); }
+  .rating-score {
+    flex-direction: row;
+    align-items: center;
+    gap: calc(var(--hl-space) * 2);
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (forced-colors: active) {
+  .rating, .rating-score { border-color: CanvasText; }
+  .stars-track { color: GrayText; }
+  .stars-fill { color: CanvasText; }
+}
+
 /* Runs once, when the list first scrolls into view, to lead the eye down the
    column in reading order. */
 .list[data-enter] .item {
@@ -255,10 +340,6 @@ const TOAST_STYLES = `
   font-size: 15px;
   line-height: 1.3;
   color: var(--hl-ink);
-  /* Shrink-wrapped so the sweep gradient is measured against the words rather
-     than the pill, otherwise it spends most of its travel over empty space. */
-  width: fit-content;
-  max-width: 100%;
 }
 
 .body {
@@ -269,6 +350,36 @@ const TOAST_STYLES = `
   text-wrap: pretty;
 }
 
+/* --- Message rotator ----------------------------------------------------- */
+
+/* Frames travel upward: the outgoing line leaves through the top while the
+   incoming one arrives from below, so the movement always reads in one
+   direction rather than reversing. The container is sized to the tallest frame
+   before the frames are taken out of flow, so the pill never resizes mid-turn. */
+.rotator { display: block; position: relative; max-width: 100%; }
+.rotator[data-ready] { overflow: hidden; }
+.rotator[data-ready] .frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: transform 520ms cubic-bezier(0.4, 0, 0.15, 1),
+              opacity 380ms ease;
+}
+
+.frame {
+  display: block;
+  /* Shrink-wrapped so the sweep gradient is measured against the words rather
+     than the pill, otherwise it spends most of its travel over empty space. */
+  width: fit-content;
+  max-width: 100%;
+}
+.rotator[data-ready] .frame { width: 100%; }
+
+.frame[data-pos="current"] { transform: none; opacity: 1; }
+.frame[data-pos="above"]   { transform: translateY(-115%); opacity: 0; }
+.frame[data-pos="below"]   { transform: translateY(115%);  opacity: 0; }
+
 /* The gradient is three times the title's width with the bright band at its
    centre. At background-position 100% the image is pulled left, parking the
    band off the left edge; at 0% it sits off the right. Animating 100% -> 0%
@@ -277,7 +388,7 @@ const TOAST_STYLES = `
    The class is added by script only when the sweep can actually run, and is
    removed again on animationend — a transparent colour must never outlive the
    animation that justifies it. */
-.title.shimmer {
+.frame.shimmer {
   background-image: linear-gradient(100deg,
     var(--hl-ink) 43%, var(--hl-shimmer) 50%, var(--hl-ink) 57%);
   background-size: 300% 100%;
@@ -301,17 +412,21 @@ const TOAST_STYLES = `
   .pill { transition: none; }
   :host([data-state="in"]) .pill,
   :host([data-state="out"]) .pill { transform: none; }
-  .title.shimmer {
+  .frame.shimmer {
     background-image: none;
     color: var(--hl-ink);
     -webkit-text-fill-color: var(--hl-ink);
     animation: none;
   }
+  /* Rotation is movement. Under reduced motion the toast shows its first
+     message only; nothing is lost, since every rotating line also lives in a
+     static surface elsewhere on the page. */
+  .rotator[data-ready] .frame { transition: none; }
 }
 
 @media (forced-colors: active) {
   .pill { border-color: CanvasText; }
-  .title.shimmer {
+  .frame.shimmer {
     background-image: none;
     color: CanvasText;
     -webkit-text-fill-color: CanvasText;
@@ -435,7 +550,12 @@ const prefersReducedMotion = () =>
 
 const isNonEmptyString = (v) => typeof v === 'string' && v.trim().length > 0;
 
-const PLACEMENTS = new Set(['list', 'toast', 'badge']);
+const PLACEMENTS = new Set(['list', 'toast', 'badge', 'rating']);
+
+/** Finite, positive, and within bounds — or null. Merchant numbers are input. */
+function finiteInRange(v, min, max) {
+  return typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max ? v : null;
+}
 
 /**
  * Reduce arbitrary input to a list of items we know how to render.
@@ -450,6 +570,8 @@ function normalise(content) {
     if (!raw || typeof raw !== 'object') return items;
     if (!isNonEmptyString(raw.title)) return items; // nothing to label a row with
 
+    const scale = finiteInRange(raw.scale, 1, 100) ?? 5;
+
     items.push({
       title: raw.title.trim(),
       // An absent body is legitimate — the row is simply title-only.
@@ -460,6 +582,15 @@ function normalise(content) {
       // Unknown or absent placement means the list, which every item can use.
       placement: PLACEMENTS.has(raw.placement) ? raw.placement : 'list',
       anchor: isNonEmptyString(raw.anchor) ? raw.anchor.trim() : null,
+      // Structured, so stars can be drawn from a number rather than scraped
+      // out of the sentence next to them.
+      rating: finiteInRange(raw.rating, 0, scale),
+      scale,
+      // Extra lines the toast cycles through after its title. Absent or empty
+      // means no rotation, which is a perfectly good toast.
+      messages: Array.isArray(raw.messages)
+        ? raw.messages.filter(isNonEmptyString).map((m) => m.trim())
+        : [],
     });
     return items;
   }, []);
@@ -477,9 +608,17 @@ function resolvePlacements(items) {
   const list = [];
   const badges = [];
   let toast = null;
+  let rating = null;
 
   for (const item of items) {
     if (item.placement === 'toast' && !toast) { toast = item; continue; }
+
+    // A rating panel without a usable score is just a sentence, so it becomes
+    // a list row rather than an empty box with no stars in it.
+    if (item.placement === 'rating' && !rating && item.rating !== null) {
+      rating = item;
+      continue;
+    }
 
     if (item.placement === 'badge' && item.anchor) {
       let anchor = null;
@@ -494,12 +633,41 @@ function resolvePlacements(items) {
     list.push(item);
   }
 
-  return { list, toast, badges };
+  return { list, toast, badges, rating };
 }
 
 /* -------------------------------------------------------------------------
  * Renderers
  * ---------------------------------------------------------------------- */
+
+const STAR =
+  '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+  '<path d="M12 3.5l2.6 5.7 6.2.7-4.6 4.2 1.3 6.1L12 17.1l-5.5 3.1 1.3-6.1L3.2 9.9l6.2-.7z"/></svg>';
+
+function starRow(cls) {
+  return h('span', { class: `stars-row ${cls}`, html: STAR.repeat(5) });
+}
+
+function buildRating(item) {
+  const pct = Math.max(0, Math.min(100, (item.rating / item.scale) * 100));
+  // One decimal place unless the score is whole, so 5 reads as "5" not "5.0".
+  const shown = Number.isInteger(item.rating) ? String(item.rating) : item.rating.toFixed(1);
+
+  return h('div', { class: 'rating' },
+    h('p', { class: 'rating-claim', text: item.body || item.title }),
+    h('div', {
+      class: 'rating-score',
+      role: 'img',
+      'aria-label': `Rated ${shown} out of ${item.scale}`,
+    },
+      h('span', { class: 'rating-value', 'aria-hidden': 'true', text: shown }),
+      h('span', { class: 'stars', 'aria-hidden': 'true' },
+        starRow('stars-track'),
+        h('span', { class: 'stars-fill', style: `width:${pct}%` }, starRow(''))
+      )
+    )
+  );
+}
 
 function buildList(items, label) {
   // A real list, so assistive technology announces the set and its length
@@ -525,8 +693,14 @@ function buildList(items, label) {
   return { root: h('div', { class: 'root' }, list), list };
 }
 
-const TOAST_DWELL = 7000;
-let toastShown = false; // once per page load, however many widgets are mounted
+function buildRoot(items, label, rating) {
+  const { root, list } = buildList(items, label);
+  if (rating) root.insertBefore(buildRating(rating), list);
+  return { root, list };
+}
+
+const TOAST_TURN = 2600;   // time each message holds before the next scrolls up
+let toastShown = false;    // once per page load, however many widgets are mounted
 
 function showToast(item) {
   if (toastShown || !item) return;
@@ -536,13 +710,20 @@ function showToast(item) {
   document.body.appendChild(host);
 
   const shadow = shadowWith(host, TOAST_STYLES);
-  const title = h('p', { class: 'title', text: item.title });
+
+  // The title is frame zero; declared messages follow it. One frame means no
+  // rotation at all, which is the correct behaviour for a payload without them.
+  const lines = [item.title, ...item.messages];
+  const frames = lines.map((text, i) =>
+    h('span', { class: 'frame', 'data-pos': i === 0 ? 'current' : 'below', text })
+  );
+  const rotator = h('p', { class: 'title rotator' }, ...frames);
 
   shadow.appendChild(
     h('div', { class: 'pill' },
       icon(ICONS[item.icon]),
       h('div', { class: 'text' },
-        title,
+        rotator,
         item.body ? h('p', { class: 'body', text: item.body }) : null
       )
     )
@@ -550,11 +731,13 @@ function showToast(item) {
 
   let closed = false;
   let timer = 0;
+  let rotate = 0;
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   function close() {
     if (closed) return;
     closed = true;
     clearTimeout(timer);
+    clearTimeout(rotate);
     document.removeEventListener('keydown', onKey, true);
     host.setAttribute('data-state', 'out');
     // Remove the element entirely rather than leaving an invisible fixed layer
@@ -565,25 +748,83 @@ function showToast(item) {
   host.addEventListener('click', close);
   document.addEventListener('keydown', onKey, true);
 
-  // Next frame, so the entrance transition has an initial state to move from.
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  // Deferred by one frame so the entrance transition has an initial state to
+  // move from — but never *dependent* on that frame arriving. requestAnimationFrame
+  // is throttled in background tabs, and a toast that only initialises when the
+  // compositor obliges is a toast that silently dies. The timer is a backstop;
+  // whichever fires first wins, and `started` makes the second a no-op.
+  let started = false;
+  const start = () => {
+    if (started || closed) return;
+    started = true;
+
     host.setAttribute('data-state', 'in');
 
+    // Lock the rotator to its widest and tallest line before taking the frames
+    // out of flow. Both matter: absolutely positioned children contribute
+    // nothing to an intrinsic width, so without this the pill would collapse
+    // around the icon — and a fixed box means the pill never resizes mid-turn.
+    const widest = Math.max(...frames.map((f) => f.offsetWidth), 0);
+    const tallest = Math.max(...frames.map((f) => f.offsetHeight), 0);
+    if (widest > 0) rotator.style.width = `${widest}px`;
+    if (tallest > 0) rotator.style.height = `${tallest}px`;
+    rotator.setAttribute('data-ready', '');
+
     // `background-clip: text` needs a transparent colour to show anything.
-    // Where unsupported that would render the title invisible, so the sweep is
+    // Where unsupported that would render the line invisible, so the sweep is
     // applied only once support is confirmed, and dropped on completion.
     const canClip =
       typeof CSS === 'object' && typeof CSS.supports === 'function' &&
       (CSS.supports('background-clip', 'text') ||
        CSS.supports('-webkit-background-clip', 'text'));
+    const reduced = prefersReducedMotion();
 
-    if (canClip && !prefersReducedMotion()) {
-      title.addEventListener('animationend', () => title.classList.remove('shimmer'), { once: true });
-      title.classList.add('shimmer');
+    if (canClip && !reduced) {
+      const unshimmer = () => frames[0].classList.remove('shimmer');
+      frames[0].addEventListener('animationend', unshimmer, { once: true });
+      // The class makes the text transparent, and only `animationend` takes it
+      // off again. If that event never arrives — animations disabled at the OS
+      // level, a throttled tab, an element that was hidden — the line would be
+      // invisible for good. The timer guarantees it comes back.
+      setTimeout(unshimmer, 2000);
+      frames[0].classList.add('shimmer');
     }
 
-    timer = setTimeout(close, TOAST_DWELL);
-  }));
+    // Rotate exactly once around and stop, so the toast ends on the line it
+    // opened with. A message that loops indefinitely reads as nagging; one
+    // that shows its second line and returns reads as an aside.
+    let shown = 0;
+    let current = 0;
+    const turns = reduced ? 0 : frames.length - 1 + (frames.length > 1 ? 1 : 0);
+
+    const advance = () => {
+      if (closed || shown >= turns) return;
+      const next = (current + 1) % frames.length;
+      frames[current].setAttribute('data-pos', 'above');
+      frames[next].setAttribute('data-pos', 'current');
+      // Park the outgoing frame below again once it has left, without
+      // animating it back through the middle.
+      const leaving = frames[current];
+      setTimeout(() => {
+        if (leaving.getAttribute('data-pos') === 'above') {
+          leaving.style.transition = 'none';
+          leaving.setAttribute('data-pos', 'below');
+          void leaving.offsetHeight; // flush, so the next turn animates again
+          leaving.style.transition = '';
+        }
+      }, 560);
+      current = next;
+      shown += 1;
+      if (shown < turns) rotate = setTimeout(advance, TOAST_TURN);
+      else timer = setTimeout(close, TOAST_TURN);
+    };
+
+    if (turns > 0) rotate = setTimeout(advance, TOAST_TURN);
+    else timer = setTimeout(close, TOAST_TURN * 2);
+  };
+
+  requestAnimationFrame(() => requestAnimationFrame(start));
+  setTimeout(start, 150);
 }
 
 function showBadge({ item, anchor }) {
@@ -692,10 +933,15 @@ export async function mount(target, options = {}) {
     const listItems = [...resolved.list];
     if (options.toast === false && resolved.toast) listItems.push(resolved.toast);
     if (options.badges === false) listItems.push(...resolved.badges.map((b) => b.item));
+    if (options.rating === false && resolved.rating) listItems.push(resolved.rating);
     listItems.sort((a, b) => items.indexOf(a) - items.indexOf(b));
 
     const shadow = shadowWith(host, LIST_STYLES);
-    const { root, list } = buildList(listItems, options.label || 'Product highlights');
+    const { root, list } = buildRoot(
+      listItems,
+      options.label || 'Product highlights',
+      options.rating === false ? null : resolved.rating
+    );
     shadow.appendChild(root);
 
     playEntrance(root, list, () => {

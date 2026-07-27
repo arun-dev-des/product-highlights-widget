@@ -305,11 +305,15 @@ const TOAST_STYLES = `
 .pill {
   pointer-events: auto;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: calc(var(--hl-space) * 3);
   box-sizing: border-box;
+  /* Sizes to its content, bounded only by the viewport. A declared message
+     therefore sits on one line wherever there is room and wraps where there is
+     not — the rotator locks to whatever height that produces, so the pill is
+     stable either way. The rem cap is a sanity bound, not a layout decision. */
   width: max-content;
-  max-width: min(30rem, calc(100vw - 32px));
+  max-width: min(56rem, calc(100vw - 24px));
   padding: calc(var(--hl-space) * 3) calc(var(--hl-space) * 4);
   background: var(--hl-surface-raised);
   border: 1px solid var(--hl-border);
@@ -334,6 +338,24 @@ const TOAST_STYLES = `
 .icon { flex: 0 0 auto; width: 22px; height: 22px; margin-top: 1px; color: var(--hl-ink); }
 .icon svg { display: block; width: 100%; height: 100%; }
 .text { min-width: 0; }
+
+/* --- Avatar stack -------------------------------------------------------- */
+
+/* Deliberately taller than the icon slot — at 28px against a 19.5px line box
+   it reads as a group of people rather than as another glyph. */
+.avatars { flex: 0 0 auto; width: 43px; height: 28px; }
+.avatars svg { display: block; width: 100%; height: 100%; }
+.av-disc { fill: var(--hl-border); }
+.av-figure { fill: var(--hl-ink); opacity: 0.62; }
+/* The ring is the surface colour, so each disc reads as sitting in front of
+   the one behind it without needing a knockout mask. */
+.av-ring { fill: none; stroke: var(--hl-surface-raised); stroke-width: 1.8; }
+
+@media (forced-colors: active) {
+  .av-disc { fill: Canvas; }
+  .av-figure { fill: CanvasText; opacity: 1; }
+  .av-ring { stroke: CanvasText; }
+}
 
 .title {
   margin: 0;
@@ -534,6 +556,38 @@ function icon(paths) {
   });
 }
 
+/**
+ * Three overlapping avatar discs, each holding an anonymous figure.
+ *
+ * Figures rather than photographs: real portraits would mean loading images
+ * from somewhere, which on a third-party widget means an extra request and a
+ * privacy question on someone else's page. The silhouette carries the same
+ * meaning — "these are people" — at zero cost. Merchant-supplied portraits
+ * would be a reasonable extension, and would slot into the same clip path.
+ */
+function avatarStack() {
+  const one = (cx, i) =>
+    `<g transform="translate(${cx} 14)">` +
+      `<circle class="av-disc" r="8.6"/>` +
+      `<g clip-path="url(#hl-av-${i})">` +
+        `<circle class="av-figure" cy="-2.3" r="3.2"/>` +
+        `<path class="av-figure" d="M-5.9 10c0-3.8 2.6-5.9 5.9-5.9s5.9 2.1 5.9 5.9z"/>` +
+      `</g>` +
+      `<circle class="av-ring" r="8.6"/>` +
+    `</g>`;
+
+  return h('span', {
+    class: 'avatars',
+    'aria-hidden': 'true',
+    html:
+      '<svg viewBox="0 0 43 28" fill="none"><defs>' +
+      [0, 1, 2].map((i) => `<clipPath id="hl-av-${i}"><circle r="8.6"/></clipPath>`).join('') +
+      '</defs>' +
+      [10, 21.5, 33].map((cx, i) => one(cx, i)).join('') +
+      '</svg>',
+  });
+}
+
 /** Attach a shadow root and give it a stylesheet, preferring the constructable
  *  form so the CSS is parsed once and shared across instances. */
 function shadowWith(host, css) {
@@ -730,15 +784,18 @@ function showToast(item) {
   );
   const rotator = h('p', { class: 'title rotator' }, ...frames);
 
-  shadow.appendChild(
-    h('div', { class: 'pill' },
-      icon(ICONS[item.icon]),
-      h('div', { class: 'text' },
-        rotator,
-        item.body ? h('p', { class: 'body', text: item.body }) : null
-      )
+  // The toast has room for the richer treatment; the list's icon column is a
+  // fixed 24px gutter, so it keeps the plain glyph.
+  const mark = item.icon === 'avatars' ? avatarStack() : icon(ICONS[item.icon]);
+
+  const pill = h('div', { class: 'pill' },
+    mark,
+    h('div', { class: 'text' },
+      rotator,
+      item.body ? h('p', { class: 'body', text: item.body }) : null
     )
   );
+  shadow.appendChild(pill);
 
   let closed = false;
   let rotate = 0;
@@ -772,13 +829,68 @@ function showToast(item) {
 
     host.setAttribute('data-state', 'in');
 
-    // Lock the rotator to its widest and tallest line before taking the frames
-    // out of flow. Both matter: absolutely positioned children contribute
-    // nothing to an intrinsic width, so without this the pill would collapse
-    // around the icon — and a fixed box means the pill never resizes mid-turn.
-    const widest = Math.max(...frames.map((f) => f.offsetWidth), 0);
+    // Lock the rotator to a fixed box before the frames leave the flow.
+    //
+    // Width is measured with wrapping suppressed, so what we capture is the
+    // width each line *wants*. Measuring as-rendered would capture a width the
+    // text had already wrapped into and then freeze that wrap in place, so a
+    // line that would comfortably fit on one row never gets the chance.
+    //
+    // The CSS max-width still caps the result, so on a narrow viewport the
+    // text wraps as it should — which is why height is measured second, once
+    // the final width is in effect.
+    // Lock the rotator to a fixed box before the frames leave the flow.
+    // Absolutely positioned children contribute nothing to an intrinsic width,
+    // so without an explicit size the pill would collapse around its icon.
+    //
+    // Available space is computed rather than measured. A percentage max-width
+    // resolves against a parent whose own width was settled before we touched
+    // anything, so measuring it reports the width the layout already had — not
+    // the width it could grow to — and locking that in freezes whatever wrap
+    // the text had already fallen into. The pill's max-width minus its own
+    // fixed furniture is an absolute bound, and nothing about it is circular.
+    // Measured on the frames themselves, with every constraint lifted, and via
+    // offsetWidth rather than getBoundingClientRect. The pill is mid-entrance
+    // here and still carries `transform: scale(0.97)`, which getBoundingClientRect
+    // faithfully applies — every measurement would come back three percent short
+    // and clip the last word. offsetWidth reports layout size and ignores
+    // transforms entirely.
+    frames.forEach((f) => {
+      f.style.whiteSpace = 'nowrap';
+      f.style.maxWidth = 'none';
+      f.style.width = 'max-content';
+    });
+    rotator.style.maxWidth = 'none';
+    rotator.style.width = 'max-content';
+
+    const cs = getComputedStyle(pill);
+    const num = (v) => (Number.isFinite(parseFloat(v)) ? parseFloat(v) : 0);
+    const furniture =
+      num(cs.paddingLeft) + num(cs.paddingRight) +
+      num(cs.borderLeftWidth) + num(cs.borderRightWidth) +
+      num(cs.columnGap || cs.gap) +
+      mark.offsetWidth;
+
+    const pillMax = parseFloat(cs.maxWidth);
+    const avail = Number.isFinite(pillMax) ? pillMax - furniture : Infinity;
+    const want = Math.max(...frames.map((f) => f.offsetWidth), 0);
+
+    // Restore the frames; only the wrapping decision below is kept.
+    frames.forEach((f) => { f.style.maxWidth = ''; f.style.width = ''; });
+
+    // offsetWidth rounds to an integer, so a couple of pixels of slack covers
+    // the fraction it drops. Invisible on a pill; a clipped word is not.
+    const SLACK = 2;
+    const oneLine = want + SLACK <= avail;
+    if (!oneLine) {
+      frames.forEach((f) => { f.style.whiteSpace = ''; });
+      rotator.style.maxWidth = '';
+      rotator.style.width = `${Math.floor(avail)}px`;
+    } else {
+      rotator.style.width = `${Math.ceil(want) + SLACK}px`;
+    }
+
     const tallest = Math.max(...frames.map((f) => f.offsetHeight), 0);
-    if (widest > 0) rotator.style.width = `${widest}px`;
     if (tallest > 0) rotator.style.height = `${tallest}px`;
     rotator.setAttribute('data-ready', '');
 

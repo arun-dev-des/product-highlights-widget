@@ -8,7 +8,7 @@ belongs and the widget renders it there: an inline list beside the buy action, a
 rating panel with a score and stars, a badge on the product image, and a
 transient toast for the item worth a moment of attention.
 
-11.8 KB gzipped, no dependencies, no build step, everything inside shadow roots.
+13.5 KB gzipped, no dependencies, no build step, everything inside shadow roots.
 
 ---
 
@@ -91,7 +91,7 @@ never throws.
 |---|---|---|
 | `title` | yes | Items without one are skipped |
 | `body` | no | Absent renders a title-only row |
-| `icon` | no | `truck`, `shield`, `star`, `leaf`, `ruler`, `avatars`; anything else falls back to a neutral glyph |
+| `icon` | no | `truck`, `shield`, `star`, `leaf`, `ruler`, `avatars`; anything else falls back to a neutral glyph. In the toast, `avatars` renders as three overlapping discs with figures rather than a flat glyph |
 | `placement` | no | `list` *(default)*, `rating`, `toast`, `badge` |
 | `anchor` | for `badge` | A CSS selector on the host page |
 | `rating` / `scale` | for `rating` | Numbers, not prose. Stars are drawn from these; `scale` defaults to 5 |
@@ -232,8 +232,8 @@ second one out of reach. Reduced motion asks for less movement, not less content
 
 ### Stack: none
 
-Vanilla JavaScript, one ES module, no dependencies, no build step. **35 KB raw,
-11.8 KB gzipped, unminified.**
+Vanilla JavaScript, one ES module, no dependencies, no build step. **40 KB raw,
+13.5 KB gzipped, unminified.**
 
 A framework was considered and rejected on fit. This is third-party code running
 on other people's storefronts; every kilobyte is spent from a budget belonging to

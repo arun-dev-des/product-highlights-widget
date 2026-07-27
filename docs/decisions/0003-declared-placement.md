@@ -51,7 +51,7 @@ declares where it belongs; the widget renders it there.**
 |---|---|
 | `list` *(default)* | The inline list beneath the buy action |
 | `rating` | A score panel: the claim, a hairline, then a numeral and stars |
-| `toast` | A transient pill pinned to the viewport, cycling through its `messages` and back, then dismissing on a timer, on click, or on Escape |
+| `toast` | A persistent pill pinned to the viewport, cycling continuously through its `messages`, dismissible on click or Escape |
 | `badge` | A small pill anchored inside an element the merchant names |
 
 Two properties make this a single component rather than four:
@@ -141,12 +141,31 @@ evaluate, and is the literal shape the brief warns against.
   cost, and the honest defence is that the presentations are small, share their
   tokens and item shape, and each degrades to the same fallback.
 
-- **The toast rotates, which is motion that repeats.** It cycles once through its
-  declared `messages` and returns to the line it opened with, then stops. A
-  message that loops indefinitely reads as nagging; one that shows a second line
-  and comes back reads as an aside. Under reduced motion it does not rotate at
-  all, and nothing is lost — every rotating line also lives in a static surface
-  elsewhere on the page.
+- **The toast is permanent, and its rotation never stops.** This reverses an
+  earlier decision. The first version dismissed after seven seconds and cycled
+  once, on the reasoning that a repeating message reads as nagging.
+
+  That reasoning applies to a *notification* — something announcing an event,
+  which has served its purpose once seen. This is not that. It is a standing
+  statement of social proof, closer in kind to a badge than to an alert, and a
+  badge that removes itself after seven seconds is simply a badge most shoppers
+  never see. It is also the only surface carrying its content.
+
+  The cost is real: perpetual motion in the corner of a merchant's page. Four
+  things keep it civil, and they are the reason this is defensible rather than
+  merely persistent:
+
+  - It **pauses on hover and on focus**, so a line never changes mid-read.
+  - It **pauses entirely while the tab is hidden** — an endless animation nobody
+    is watching is just battery.
+  - Each line's **dwell scales with its length** (2.4s to 6.5s), so a long
+    sentence is not swapped out before it can be read.
+  - It is **dismissible** at any time by click or Escape, and removes its element
+    from the document rather than merely hiding it.
+
+  Under reduced motion it crossfades in place rather than travelling. It still
+  rotates, because suppressing the rotation would put the second line out of
+  reach entirely — reduced motion asks for less movement, not less content.
 
 - **The badge writes to the merchant's element.** An absolutely positioned child
   needs a containing block, so `showBadge()` sets `position: relative` on the
@@ -163,10 +182,11 @@ evaluate, and is the literal shape the brief warns against.
   its own shadow root, so isolation is preserved, and it removes itself entirely
   on dismissal rather than leaving an invisible fixed layer behind.
 
-- **The toast duplicates content.** Its item is not in the list, so it is the only
-  place that content appears — which is why it is *not* hidden from assistive
-  technology, and why dismissal is time-based rather than permanent within a page
-  view. *(If it were duplicated, `aria-hidden` would be correct instead.)*
+- **The toast is the only home for its content.** It is therefore *not* hidden
+  from assistive technology. Every line sits in the DOM at once and is read in
+  order; the rotation is a visual treatment rather than a change of content, so
+  there is nothing to announce and no live region is used. *(Were the content
+  duplicated elsewhere, `aria-hidden` would be the correct choice instead.)*
 
 - **Placement is now merchant-configurable surface area.** A merchant can point
   `anchor` at something unsuitable — a fixed-height container, an element that is

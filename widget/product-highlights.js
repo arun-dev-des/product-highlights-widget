@@ -360,9 +360,11 @@ const TOAST_STYLES = `
 .rotator[data-ready] { overflow: hidden; }
 .rotator[data-ready] .frame {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
+  inset: 0;
+  /* The rotator is locked to the tallest line, so a shorter one would
+     otherwise sit top-aligned in a box built for two lines. */
+  display: flex;
+  align-items: center;
   transition: transform 520ms cubic-bezier(0.4, 0, 0.15, 1),
               opacity 380ms ease;
 }
@@ -418,10 +420,12 @@ const TOAST_STYLES = `
     -webkit-text-fill-color: var(--hl-ink);
     animation: none;
   }
-  /* Rotation is movement. Under reduced motion the toast shows its first
-     message only; nothing is lost, since every rotating line also lives in a
-     static surface elsewhere on the page. */
-  .rotator[data-ready] .frame { transition: none; }
+  /* The toast is the only place these lines appear, so suppressing the
+     rotation outright would put content out of reach. It crossfades in place
+     instead: the message still changes, nothing travels. */
+  .rotator[data-ready] .frame { transition: opacity 300ms ease; }
+  .frame[data-pos="above"],
+  .frame[data-pos="below"] { transform: none; }
 }
 
 @media (forced-colors: active) {
@@ -699,14 +703,21 @@ function buildRoot(items, label, rating) {
   return { root, list };
 }
 
-const TOAST_TURN = 2600;   // time each message holds before the next scrolls up
+/** How long a line holds before the next scrolls up. Scaled to its length, so a
+ *  long sentence is not swapped out before it can be read. */
+const dwellFor = (text) => Math.min(6500, Math.max(2400, text.length * 62));
+
 let toastShown = false;    // once per page load, however many widgets are mounted
 
 function showToast(item) {
   if (toastShown || !item) return;
   toastShown = true;
 
-  const host = h('div', { 'data-product-highlights': 'toast', 'aria-hidden': 'true' });
+  // Not aria-hidden. The toast is the only place its content appears, so
+  // hiding it would put that content out of reach entirely. Every line is in
+  // the DOM at once and read in order — the rotation is a visual treatment,
+  // not a change of content, so there is nothing to announce.
+  const host = h('div', { 'data-product-highlights': 'toast' });
   document.body.appendChild(host);
 
   const shadow = shadowWith(host, TOAST_STYLES);
@@ -730,15 +741,16 @@ function showToast(item) {
   );
 
   let closed = false;
-  let timer = 0;
   let rotate = 0;
+  let paused = false;
   const onKey = (e) => { if (e.key === 'Escape') close(); };
+  const onVisibility = () => { paused = document.hidden; };
   function close() {
     if (closed) return;
     closed = true;
-    clearTimeout(timer);
     clearTimeout(rotate);
     document.removeEventListener('keydown', onKey, true);
+    document.removeEventListener('visibilitychange', onVisibility);
     host.setAttribute('data-state', 'out');
     // Remove the element entirely rather than leaving an invisible fixed layer
     // sitting over the merchant's page.
@@ -790,15 +802,13 @@ function showToast(item) {
       frames[0].classList.add('shimmer');
     }
 
-    // Rotate exactly once around and stop, so the toast ends on the line it
-    // opened with. A message that loops indefinitely reads as nagging; one
-    // that shows its second line and returns reads as an aside.
-    let shown = 0;
+    // The toast is permanent, so the rotation is too. Nothing here dismisses
+    // it on a timer; it stays until the shopper closes it.
+    if (frames.length < 2) return;
+
     let current = 0;
-    const turns = reduced ? 0 : frames.length - 1 + (frames.length > 1 ? 1 : 0);
 
     const advance = () => {
-      if (closed || shown >= turns) return;
       const next = (current + 1) % frames.length;
       frames[current].setAttribute('data-pos', 'above');
       frames[next].setAttribute('data-pos', 'current');
@@ -814,14 +824,26 @@ function showToast(item) {
         }
       }, 560);
       current = next;
-      shown += 1;
-      if (shown < turns) rotate = setTimeout(advance, TOAST_TURN);
-      else timer = setTimeout(close, TOAST_TURN);
     };
 
-    if (turns > 0) rotate = setTimeout(advance, TOAST_TURN);
-    else timer = setTimeout(close, TOAST_TURN * 2);
+    // A single scheduler that checks before every turn rather than a fixed
+    // interval, so pausing never leaves a queued turn to fire late.
+    const tick = () => {
+      if (closed) return;
+      if (!paused) advance();
+      rotate = setTimeout(tick, dwellFor(lines[current]));
+    };
+    rotate = setTimeout(tick, dwellFor(lines[0]));
   };
+
+  // Hold the current line while it is being read, and stop entirely while the
+  // tab is in the background — an endless animation nobody is looking at is
+  // just battery.
+  host.addEventListener('pointerenter', () => { paused = true; });
+  host.addEventListener('pointerleave', () => { paused = false; });
+  host.addEventListener('focusin', () => { paused = true; });
+  host.addEventListener('focusout', () => { paused = false; });
+  document.addEventListener('visibilitychange', onVisibility);
 
   requestAnimationFrame(() => requestAnimationFrame(start));
   setTimeout(start, 150);

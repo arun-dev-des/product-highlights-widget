@@ -57,6 +57,13 @@
     </section>
 
     <section>
+      <h2>Rating panel</h2>
+      <p class="note">Score drawn from <code>rating</code> and <code>scale</code>, never parsed from the sentence.</p>
+      <div class="frame"><div id="rating"></div></div>
+      <p class="expect">4.8 of 5 fills four and four-fifths stars. The second entry has no usable score, so it demotes to a list row.</p>
+    </section>
+
+    <section>
       <h2>Empty array</h2>
       <p class="note">Should render nothing at all — no box, no rule.</p>
       <div class="frame"><div id="empty"></div></div>
@@ -86,6 +93,13 @@
       { title: 'Unrecognised icon name', body: 'Falls back to a neutral glyph.', icon: 'spaceship' },
       { title: 'A considerably longer title than any merchant should reasonably send',
         body: 'And a body to match. '.repeat(12), icon: 'leaf' },
+    ] } });
+
+    mount('#rating', { toast: false, content: { highlights: [
+      { title: 'Rated 4.8 out of 5', body: '94% of reviewers say it kept its shape after washing.',
+        placement: 'rating', rating: 4.8, scale: 5 },
+      { title: 'Rating with no score', body: 'Demotes to a list row rather than an empty panel.',
+        placement: 'rating', icon: 'star' },
     ] } });
 
     mount('#empty', { toast: false, content: { highlights: [] } });

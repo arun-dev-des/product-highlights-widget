@@ -8,7 +8,7 @@ belongs and the widget renders it there: an inline list beside the buy action, a
 rating panel with a score and stars, a badge on the product image, and a
 transient toast for the item worth a moment of attention.
 
-11.4 KB gzipped, no dependencies, no build step, everything inside shadow roots.
+11.8 KB gzipped, no dependencies, no build step, everything inside shadow roots.
 
 ---
 
@@ -210,17 +210,21 @@ Three moments, each with a job:
   The easing is **linear on purpose**: an eased curve makes the highlight race
   across the words and then crawl, so most of the duration renders no visible
   change. A travelling light moves at a constant speed.
-- **The toast then scrolls up through its messages and back**, resting on the line
-  it opened with. It cycles exactly once. A message that loops indefinitely reads
-  as nagging; one that shows a second line and returns reads as an aside. The
-  rotator is locked to its widest and tallest line before the frames leave the
-  flow, so the pill never resizes mid-turn.
+- **The toast then scrolls up through its messages, continuously.** It is a
+  standing statement of social proof rather than a notification, so it stays.
+  The rotator is locked to its widest and tallest line before the frames leave
+  the flow, so the pill never resizes mid-turn, and each line's dwell scales with
+  its length (2.4s–6.5s) so a long sentence is not swapped out before it can be
+  read.
 
-Nothing loops indefinitely. Under `prefers-reduced-motion` none of it runs —
-reduced motion asks for less movement, not less content, so every surface still
-appears, it simply arrives rather than moves, and the toast shows its first line
-only. Nothing is lost: every rotating line also lives in a static surface
-elsewhere on the page.
+  Perpetual motion on someone else's page has to earn its keep, so it pauses on
+  hover and on focus, pauses entirely while the tab is hidden, and is dismissible
+  by click or Escape — which removes the element rather than hiding it.
+
+Under `prefers-reduced-motion` the entrance, stagger and sweep do not run at all.
+The toast still rotates, but crossfades in place rather than travelling: it is
+the only surface carrying those lines, and suppressing the rotation would put the
+second one out of reach. Reduced motion asks for less movement, not less content.
 
 ---
 
@@ -228,8 +232,8 @@ elsewhere on the page.
 
 ### Stack: none
 
-Vanilla JavaScript, one ES module, no dependencies, no build step. **34 KB raw,
-11.4 KB gzipped, unminified.**
+Vanilla JavaScript, one ES module, no dependencies, no build step. **35 KB raw,
+11.8 KB gzipped, unminified.**
 
 A framework was considered and rejected on fit. This is third-party code running
 on other people's storefronts; every kilobyte is spent from a budget belonging to

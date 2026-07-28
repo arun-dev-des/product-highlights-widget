@@ -25,7 +25,7 @@ them somewhere else entirely.
 | [`dev/harness.html`](dev/harness.html) | Twelve cases — every layout, content shape and failure mode, each stating what should be true |
 | [`stress/`](stress/) | Seven host pages built to break it. Findings, including the unflattering ones, in [stress/README.md](stress/README.md) |
 | [`react/`](react/) | The same widget on React 19 — a measurement, not the deliverable. [react/README.md](react/README.md) |
-| [`docs/decisions/`](docs/decisions/) | Three ADRs for the load-bearing choices |
+| [`docs/decisions/`](docs/decisions/) | Four ADRs for the load-bearing choices |
 
 ## Running it
 
@@ -256,8 +256,8 @@ hold that claim to account.
 
 ## The records
 
-The three load-bearing choices are argued in full in their own records — the
-context, the alternatives rejected, and the consequences accepted:
+The load-bearing choices are argued in full in their own records — the context,
+the alternatives rejected, and the consequences accepted:
 
 - [**ADR 0001 — Style isolation**](docs/decisions/0001-style-isolation.md)
   Why every surface renders in its own shadow root, and what class prefixing and
@@ -271,6 +271,10 @@ context, the alternatives rejected, and the consequences accepted:
 - [**ADR 0003 — Declared placement**](docs/decisions/0003-declared-placement.md)
   Four placements, why placement is declared rather than derived from `type`,
   and the fallback rule that every layout is built out of.
+- [**ADR 0004 — Layout from the measure**](docs/decisions/0004-layout-from-the-measure.md)
+  Why the columns break where they do. The payload's titles run 12–24 characters
+  and its bodies 65–80, and every track minimum, wrapping rule and withheld body
+  is keyed to those numbers rather than to a grid chosen first.
 
 ## With more time
 

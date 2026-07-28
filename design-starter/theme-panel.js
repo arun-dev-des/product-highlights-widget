@@ -48,11 +48,37 @@
  * mounts programmatically and has no tag to read.
  * ---------------------------------------------------------------------- */
 const widgetTag = document.querySelector('script[data-mount][data-content]');
-const widgetUrl = widgetTag
-  ? widgetTag.src
-  : new URL('../widget/product-highlights.js', import.meta.url).href;
 
-const { mount, _reset } = await import(widgetUrl);
+/**
+ * Get at the widget's API without running it twice.
+ *
+ * A `type="module"` tag and this module share a resolution map, so importing
+ * the same URL hands back the instance the page already has. A classic tag does
+ * not: it has executed in its own world and published its API on a global, and
+ * importing that same file would be a second execution and a second mount. So
+ * the global wins whenever the tag is not a module — which is how the React
+ * build in `react/` ships.
+ */
+async function widgetApi() {
+  if (widgetTag && widgetTag.type !== 'module' && window.ProductHighlights) {
+    return window.ProductHighlights;
+  }
+  const url = widgetTag
+    ? widgetTag.src
+    : new URL('../widget/product-highlights.js', import.meta.url).href;
+  const ns = await import(url);
+  // An IIFE bundle imported as a module runs but exports nothing, so fall back
+  // to whatever it published on the way past.
+  return typeof ns.mount === 'function' ? ns : window.ProductHighlights;
+}
+
+const api = await widgetApi();
+const mount = api && api.mount;
+const _reset = (api && api._reset) || (() => {});
+
+/* Which layouts this build actually renders. The vanilla widget says so; a build
+   that does not answer gets the one layout every build has. */
+const SUPPORTED = Array.isArray(api && api.layouts) ? api.layouts : ['distributed'];
 
 /* Where to point.
  *
@@ -400,6 +426,12 @@ legend {
 .layout .lname { display: block; font-size: 12px; }
 .layout .lhint { display: block; font-size: 10.5px; color: #a09a8e; margin-top: 1px; }
 
+/* Offered by the panel, not implemented by the build on this page. Shown and
+   disabled rather than hidden, so the gap is legible instead of mysterious. */
+.layout[aria-disabled="true"] { opacity: 0.42; cursor: not-allowed; }
+.layout[aria-disabled="true"]:hover { background: #fff; }
+.layout[aria-disabled="true"] .lhint { color: #9a7b4f; }
+
 .row { display: flex; align-items: center; gap: 9px; padding: 8px 0; }
 .row + .row { border-top: 1px solid #f4f1ea; }
 .row .meta { flex: 1; min-width: 0; }
@@ -615,10 +647,17 @@ function build() {
   };
 
   for (const l of LAYOUTS) {
+    const ok = SUPPORTED.includes(l.id);
     const b = el('button', {
-      class: 'layout', type: 'button', 'aria-pressed': String(l.id === layout),
-      onclick: () => setLayout(l.id),
-    }, el('span', { class: 'lname', text: l.name }), el('span', { class: 'lhint', text: l.hint }));
+      class: 'layout', type: 'button',
+      'aria-pressed': String(l.id === layout),
+      'aria-disabled': ok ? null : 'true',
+      disabled: ok ? null : '',
+      onclick: () => { if (ok) setLayout(l.id); },
+    },
+      el('span', { class: 'lname', text: l.name }),
+      el('span', { class: 'lhint', text: ok ? l.hint : 'Not implemented by the build on this page' }),
+    );
     layoutBtns.set(l.id, b);
     layouts.appendChild(b);
   }

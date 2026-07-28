@@ -118,6 +118,13 @@ auto-mounts, two toasts, and a panel driving an instance the page never rendered
 For a page that mounts programmatically and has no tag to read, point it
 explicitly with `data-panel-mount` and `data-panel-content`.
 
+It asks the build what it can do rather than assuming. `mount` exports the
+layouts it renders, and the panel offers exactly those — on the
+[React page](design-starter/host-page-react.html), which ships the four
+placements but not the layouts, theming works and the five layout controls are
+shown disabled with the reason. A control that silently does nothing is worse
+than one that says it cannot.
+
 It is a merchant tool, **not part of the widget**: zero bytes in the bundle, and
 deleting the tag removes it. The widget has no idea it exists — the panel only
 sets the public custom properties, the same channel a stylesheet would use.

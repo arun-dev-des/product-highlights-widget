@@ -1665,6 +1665,16 @@ export async function mount(target, options = {}) {
   }
 }
 
+/**
+ * The layouts this build renders.
+ *
+ * Exposed so a configurator can offer exactly what is supported rather than
+ * guessing from the build it happens to be talking to — the React build in
+ * `react/` implements the placements but not the layouts, and a switcher that
+ * silently does nothing is worse than one that says it cannot.
+ */
+export const layouts = [...LAYOUTS];
+
 /** Exposed for the dev harness so the surfaces can be replayed. */
 export function _reset() {
   toastShown = false;

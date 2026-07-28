@@ -156,8 +156,22 @@
        though the widget inside is now a component tree. Not type="module": the
        bundle is an iife, which keeps document.currentScript available for the
        auto-mount. -->
+
   <script src="../react/dist/product-highlights.react.js"
           data-mount="#widget-slot"
           data-content="./sample-content.json"></script>
+
+  <!-- ================================================================= -->
+  <!-- Theme panel. No attributes needed: it reads the mount and payload   -->
+  <!-- from the widget's tag above. That tag is a classic script, not a    -->
+  <!-- module, so the panel takes the API off window.ProductHighlights     -->
+  <!-- rather than importing the bundle a second time.                     -->
+  <!--                                                                     -->
+  <!-- Theming works here. Layout switching does not: this build ships the  -->
+  <!-- four placements but not the layouts, and the panel says so rather    -->
+  <!-- than offering controls that do nothing.                             -->
+  <!-- ================================================================= -->
+  <script type="module" src="./theme-panel.js"></script>
+
 </body>
 </html>

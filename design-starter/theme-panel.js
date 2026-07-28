@@ -34,24 +34,41 @@
  *    judged before it is used.
  */
 
-/* The ?v must match the host page's script tag exactly — a module's identity is
-   its resolved URL, and a mismatch would load the widget twice. The path is
-   resolved against this file, not the page including it, so the panel can be
-   dropped into any page as long as it stays beside the widget directory. */
-import { mount, _reset } from '../widget/product-highlights.js?v=8';
-
 /* -------------------------------------------------------------------------
- * Where to point
+ * Wiring
+ *
+ * The panel has to share the page's widget instance rather than load a second
+ * one. A module's identity is its resolved URL, so importing a path that
+ * differs from the page's script tag by so much as a cache-busting query gives
+ * two modules, two auto-mounts and two toasts — and the panel's `_reset()`
+ * cannot see the instance the page actually mounted.
+ *
+ * So the URL is taken from the widget's own tag rather than written here and
+ * kept in sync by hand. The literal below is only the fallback for a page that
+ * mounts programmatically and has no tag to read.
+ * ---------------------------------------------------------------------- */
+const widgetTag = document.querySelector('script[data-mount][data-content]');
+const widgetUrl = widgetTag
+  ? widgetTag.src
+  : new URL('../widget/product-highlights.js', import.meta.url).href;
+
+const { mount, _reset } = await import(widgetUrl);
+
+/* Where to point.
  *
  * `document.currentScript` is null inside a module, so the panel finds its own
- * tag by an attribute of its own — deliberately not the widget's `data-mount`
- * and `data-content`, which would make the widget's auto-mount pick up the
- * wrong tag. Both fall back to the demo page's values, so that page needs no
- * attributes at all.
- * ---------------------------------------------------------------------- */
+ * tag by attributes of its own — deliberately not the widget's `data-mount` and
+ * `data-content`, which the widget's auto-mount queries for and would then pick
+ * up the wrong tag. Both are optional: absent, they follow the widget's tag, so
+ * dropping the panel onto a page that already embeds the widget needs no
+ * configuration at all. */
 const tag = document.querySelector('script[data-panel-mount], script[data-panel-content]');
-const MOUNT = (tag && tag.dataset.panelMount) || '#widget-slot';
-const CONTENT = (tag && tag.dataset.panelContent) || './sample-content.json';
+const MOUNT = (tag && tag.dataset.panelMount)
+  || (widgetTag && widgetTag.dataset.mount)
+  || '#widget-slot';
+const CONTENT = (tag && tag.dataset.panelContent)
+  || (widgetTag && widgetTag.dataset.content)
+  || './sample-content.json';
 
 /* -------------------------------------------------------------------------
  * The token contract

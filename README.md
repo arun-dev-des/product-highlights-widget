@@ -104,19 +104,23 @@ and `:root` loses to the widget's own `:host` declarations.
 ### The theme panel
 
 A configurator that writes exactly the block above, live, and grades every colour
-pair against WCAG AA as you go. Add it with one tag — it needs no attributes if
-your mount is `#widget-slot`:
+pair against WCAG AA as you go. Add it below the widget's own tag — it needs no
+configuration, because it reads the mount and payload from that tag:
 
 ```html
-<script type="module" src="/design-starter/theme-panel.js"
-        data-panel-mount="#highlights"
-        data-panel-content="/highlights.json"></script>
+<script type="module" src="/design-starter/theme-panel.js"></script>
 ```
+
+It takes the widget's **module URL** from that tag too, rather than importing a
+path of its own. A module's identity is its resolved URL, so a path differing by
+so much as a cache-busting query would load the widget a second time — two
+auto-mounts, two toasts, and a panel driving an instance the page never rendered.
+For a page that mounts programmatically and has no tag to read, point it
+explicitly with `data-panel-mount` and `data-panel-content`.
 
 It is a merchant tool, **not part of the widget**: zero bytes in the bundle, and
 deleting the tag removes it. The widget has no idea it exists — the panel only
 sets the public custom properties, the same channel a stylesheet would use.
-Keep it beside `widget/`, since it imports the module by relative path.
 
 It is also where ADR 0002's contrast gate lives, because it is the only place it
 *can*: custom properties are applied by the browser directly, so at that layer

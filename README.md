@@ -11,9 +11,7 @@ them somewhere else entirely.
 **20.3 KB gzipped. No dependencies, no build step, everything inside shadow roots.**
 
 [**Product page**](https://product-highlights-widget.vercel.app/design-starter/host-page.html) ·
-[Dev harness](https://product-highlights-widget.vercel.app/dev/harness.html) ·
-[Stress suite](https://product-highlights-widget.vercel.app/stress/) ·
-[React variant](https://product-highlights-widget.vercel.app/design-starter/host-page-react.html)
+[Dev harness](https://product-highlights-widget.vercel.app/dev/harness.html)
 
 ---
 
@@ -128,93 +126,36 @@ where a value exists before it is used.
 
 ---
 
-## Design decisions
+## Decisions
 
-**A list of objections, not of features.** The five facts map one-to-one onto the
-five reasons somebody hesitates before buying a $148 knit. The widget sits at the
-decision point and is sized to be scanned rather than read.
+The three load-bearing choices are argued in full in their own records — the
+context, the alternatives rejected, and the consequences accepted:
 
-**Everything is visible by default.** An accordion was drafted and removed:
-fifteen lines of text fit, and hiding them charged a click to reach the most
-useful sentence in the payload. It ships as a *layout* for payloads that do not
-fit — the argument was about the default, not the capability.
-
-**Four placements, because the items are not peers.** Delivery and fit answer
-purchase hesitation; a material is a product attribute; a score wants a panel
-built for a score. Rendering them identically treated content with different
-roles as though it had one. [ADR 0003 →](docs/decisions/0003-declared-placement.md)
-
-**Placement is declared, never derived from `type`.** `type === 'material'` →
-image corner is a guess about markup we have never seen. The merchant knows where
-their product image is; we never do. [ADR 0003 →](docs/decisions/0003-declared-placement.md)
-
-**It reads as part of the page, not a component on it.** Hairlines instead of a
-box, no horizontal padding, and type, palette and rhythm taken from the host
-page's own stylesheet. Hierarchy comes from size and colour rather than weight,
-because Georgia's bold dates the type at this size.
-
-**Motion has three jobs.** The list staggers in once to lead the eye down the
-column; the badge fades down so it reads as arriving; a warm sweep crosses the
-toast's first line, linear on purpose because a travelling light moves at a
-constant speed. Reduced motion suppresses the entrance and the sweep entirely.
-
-## Technical decisions
-
-**No framework.** Third-party code on someone else's storefront spends every
-kilobyte from the merchant's budget, and there is no state to manage — the whole
-render is one pass over an array. Measured, not asserted:
-[`react/`](react/README.md) is the same widget on React 19 at **112.6 KB gzipped
-against 20.3 KB**, and none of the difference is widget code.
-
-**Shadow DOM for isolation.** The host page claims `.card`, `.title` and `.btn`;
-a widget defining `.card` would ship a visual regression into a live checkout
-path. Class prefixing defends against class collisions only, and relies on
-discipline rather than a mechanism. [ADR 0001 →](docs/decisions/0001-style-isolation.md)
-
-**Theming is declared, never inferred.** Probing the host with
-`getComputedStyle` cannot be tested across stores you have never seen, depends on
-webfont timing, and can pair an inherited dark surface with default dark ink to
-produce unreadable text. [ADR 0002 →](docs/decisions/0002-theming-and-native-feel.md)
-
-**Two deliberate writes to the host page.** The toast is appended to
-`document.body`, because `position: fixed` resolves against any transformed
-ancestor rather than the viewport. The badge sets `position: relative` on its
-anchor, and only when the computed position is `static`.
-[ADR 0003 →](docs/decisions/0003-declared-placement.md)
-
-**Failing safe.** `normalise()` reduces arbitrary input to items known to render,
-dropping anything unexpected rather than repairing it. A 404, malformed JSON or a
-payload of the wrong shape produces one `console.warn` and no output. All text is
-assigned through `textContent`. [Findings →](stress/README.md)
-
-**Content hidden pending an animation never depends on that animation arriving.**
-The list is hidden only after an `IntersectionObserver` is attached, and a 1600ms
-backstop reveals it regardless. *This was a real bug, caught by screenshotting
-the rendered page rather than by reading the code.*
-
-## Accessibility
-
-A real `<ul>`, so the set and its length are announced before it is read through.
-Icons are `aria-hidden` and every icon's meaning is carried by adjacent text.
-Accordion headers are real `<button>`s with `aria-expanded`, and a row with
-nothing to reveal is not a control. The toast is dismissible by click or Escape
-and is never hidden from assistive technology, because it is the only place its
-content appears. `prefers-reduced-motion` and `forced-colors` are handled on
-every surface.
+- [**ADR 0001 — Style isolation**](docs/decisions/0001-style-isolation.md)
+  Why every surface renders in its own shadow root, and what class prefixing and
+  an iframe would each have cost. The claim is tested, not assumed:
+  [stress page 01](stress/01-hostile-css.html) throws `!important` and element
+  selectors at every generic class the widget uses.
+- [**ADR 0002 — Theming and native feel**](docs/decisions/0002-theming-and-native-feel.md)
+  The token contract, why the defaults are treated as the primary design work
+  rather than as fallbacks, and why probing the host page for its palette was
+  deliberately not built.
+- [**ADR 0003 — Declared placement**](docs/decisions/0003-declared-placement.md)
+  Four placements, why placement is declared rather than derived from `type`,
+  and the fallback rule that every layout is built out of.
 
 ## With more time
 
-- **A focusable toast.** It dismisses on click and Escape but is not in the tab
-  order — the one keyboard gap the widget has.
-- **A `theme` block in the payload**, so non-technical merchants configure
-  without touching CSS. The contrast gate in ADR 0002 becomes enforceable the
-  moment that exists.
-- **Dark mode** via `prefers-color-scheme`. The token contract already
-  accommodates it.
-- **A badge that validates its anchor.** The fallback protects against *absent*
-  anchors, not *unwise* ones.
 - **Testing.** Visual regression across layouts and copy lengths, a screen reader
   pass, real devices rather than emulation.
+- **An agent that reads the page.** Give a vision model the merchant's *rendered*
+  storefront, let it infer palette, type and density from what a shopper actually
+  sees, and have it drive the theme configurator to produce the token block. ADR
+  0002 rejected runtime inference because probing the DOM cannot be tested across
+  stores you have never seen and fails silently when it guesses wrong. Looking at
+  the rendered page instead, and emitting a config a human approves before it
+  ships, moves that guess out of the shopper's browser and into a step where
+  being wrong is cheap.
 
 ## AI tools
 

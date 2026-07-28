@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aster Merino Crew Knit</title>
+  <style>
+    /* The merchant's existing page styling, copied verbatim from
+       design-starter/host-page.html so the widget is developed against exactly
+       the hazard it ships into. Note the generic class names. */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, 'Times New Roman', serif;
+      color: #2b2b2b;
+      background: #fdfcf9;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    header.container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+    }
+
+    .brand {
+      font-size: 22px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    nav a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #2b2b2b;
+      font-size: 14px;
+    }
+
+    .product {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      margin-top: 24px;
+      align-items: start;
+    }
+
+    .gallery {
+      background: #ece7dd;
+      border-radius: 4px;
+      aspect-ratio: 4/5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #b3a894;
+      font-style: italic;
+    }
+
+    .title {
+      font-size: 34px;
+      margin: 0 0 8px;
+      font-weight: 400;
+    }
+
+    .price {
+      font-size: 22px;
+      margin: 0 0 24px;
+    }
+
+    .card {
+      border: 1px solid #e4ddcf;
+      border-radius: 4px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      padding: 14px;
+      background: #2b2b2b;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 15px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .desc {
+      margin-top: 24px;
+      line-height: 1.7;
+      color: #4a4a4a;
+    }
+
+    @media (max-width: 760px) {
+      .product {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="container">
+    <div class="brand">Aster</div>
+    <nav>
+      <a href="#">Shop</a>
+      <a href="#">About</a>
+      <a href="#">Cart (0)</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="product">
+      <div class="gallery">product image</div>
+      <div class="details">
+        <h1 class="title">Aster Merino Crew Knit</h1>
+        <p class="price">$148.00</p>
+
+        <div class="card">
+          <button class="btn">Add to cart</button>
+        </div>
+
+        <!-- ============================================================= -->
+        <!-- Mounted below the buy action: these highlights answer the      -->
+        <!-- reasons a shopper hesitates, so they belong at the moment the  -->
+        <!-- decision is made, without pushing the CTA down the page.       -->
+        <div id="widget-slot"></div>
+        <!-- ============================================================= -->
+
+        <p class="desc">
+          A midweight crew knit in traceable merino wool. Designed to be worn year round,
+          it breathes in the warmth and insulates in the cold. Cut for a relaxed, regular fit.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script type="module"
+          src="/src/index.jsx"
+          data-mount="#widget-slot"
+          data-content="/sample-content.json"></script>
+</body>
+</html>

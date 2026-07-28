@@ -8,6 +8,10 @@
 # Assignment brief — kept locally for reference, not part of the deliverable
 design-engineer-takehome-assignment-brief.md
 
+# Scratch pages used while building the stress suite. The numbered cases and
+# their index are the suite; these are the throwaways alongside it.
+stress/_*.html
+
 # OS
 .DS_Store
 
@@ -15,6 +19,13 @@ design-engineer-takehome-assignment-brief.md
 node_modules/
 dist/
 build/
+
+# …except the React bundle, which is committed on purpose. The vanilla widget
+# needs no build, so the repo can be deployed by serving it statically. Keeping
+# the compiled React file in tree preserves that: host-page-react.html works
+# from a plain static host with no build step at deploy time.
+!react/dist/
+!react/dist/product-highlights.react.js
 
 # Logs
 *.log

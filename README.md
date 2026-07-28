@@ -105,6 +105,12 @@ however wrong the configuration.
 | `accordion` | Bodies behind a disclosure, one open at a time |
 | `steps` | The accordion, cycling its rows on its own |
 
+![The six layouts, each rendered from the same payload](docs/images/layouts.png)
+
+*The same five items through every layout, captured from
+[`dev/harness.html`](dev/harness.html). `distributed` shows its list surface here;
+its badge and toast sit elsewhere on the page, as in the screenshot below.*
+
 The five single-surface layouts are not a second rendering path: they turn the
 other surfaces off and let the fallback rule above return their items to the
 list. [ADR 0003 →](docs/decisions/0003-declared-placement.md)
@@ -125,6 +131,14 @@ and `:root` loses to the widget's own `:host` declarations.
 ```
 
 ### The theme panel
+
+![The theme configurator open on the mock storefront](docs/images/theme-configurator.png)
+
+*The panel open on [`design-starter/host-page.html`](design-starter/host-page.html).
+Behind it, the `distributed` layout in full: the badge on the product image, the
+list beside the buy action, the toast pinned to the viewport. **Legibility** grades
+only the pairs the selected layout actually renders; **Output** is the CSS block,
+ready to copy.*
 
 A configurator that writes exactly the block above, live, and grades every colour
 pair against WCAG AA as you go. Add it below the widget's own tag — it needs no

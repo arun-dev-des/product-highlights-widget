@@ -336,9 +336,14 @@ const PANEL_CSS = `
   all: initial;
   font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
   color: #1c1c1c;
-  /* Above the toast's 9999, so the tool is never the thing that is covered. */
-  z-index: 10000;
 }
+
+/* Stacking is declared on the two fixed children, not on :host. The reset above
+   sets position to static, and z-index does nothing on a static element — put
+   there it looks correct and silently has no effect. The value clears the
+   widget's own layers deliberately: the toast sits at 9999 and the badge at 2,
+   and a configurator its own subject renders on top of is not a configurator. */
+.tab, .drawer { z-index: 10000; }
 
 .tab {
   position: fixed;

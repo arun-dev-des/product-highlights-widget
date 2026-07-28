@@ -70,13 +70,20 @@ Measured, gzip level 9, on the actual build output:
 | react + react-dom | 189.9 kB | **58.9 kB** | 53% |
 | motion | +122.4 kB | **+38.8 kB** | 35% |
 | the widget itself | +40.0 kB | **+14.1 kB** | 13% |
-| **total** | **352.3 kB** | **111.8 kB** | |
-| vanilla build, for comparison | 46.3 kB | **15.3 kB** | |
+| **total** | **354.3 kB** | **112.6 kB** | |
+| vanilla build, for comparison | 63.4 kB | **20.3 kB** | |
 
-That is **7.3× the vanilla build**, and the honest reading of the table is that
-none of the increase is the widget. My own code compresses to 14.1 kB here against
-15.3 kB vanilla — very slightly *less*, for the same four surfaces plus gestures.
-The entire 96 kB delta is framework.
+That is **5.5× the vanilla build**, and the honest reading of the table is that
+none of the increase is the widget. My own code compresses to 14.1 kB here — for
+the same four surfaces plus gestures — against a vanilla build that started at
+13.9 kB and has since grown past it.
+
+**The ratio has fallen from 7.3× and that is not good news.** Framework overhead
+is fixed at ~98 kB gzipped; the vanilla build has since gained five layouts the
+React build does not have, so the comparison is no longer like-for-like and the
+denominator moved rather than the numerator. Ported across, the React build would
+carry the same layout code and land in the same place, still ~98 kB heavier. The
+useful figure is the constant, not the multiple.
 
 Two things worth knowing about that number:
 

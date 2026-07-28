@@ -487,8 +487,16 @@ ${ce}
   max-width: 100%;
   box-sizing: border-box;
   padding: calc(var(--hl-space) * 1.75) calc(var(--hl-space) * 3);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(228, 221, 207, 0.9);
+  /* Tokenised, not literal. These were once the default hex values written out
+     with alpha, which meant the label followed --hl-ink while the pill stayed
+     white — on any dark theme the badge disappeared into its own background.
+     The solid colour is declared first so an engine without color-mix gets an
+     opaque pill rather than none; the translucency is what the backdrop-filter
+     below has to work with. */
+  background: var(--hl-surface-raised);
+  background: color-mix(in srgb, var(--hl-surface-raised) 90%, transparent);
+  border: 1px solid var(--hl-border);
+  border-color: color-mix(in srgb, var(--hl-border) 90%, transparent);
   border-radius: 999px;
   box-shadow: 0 2px 10px rgba(43, 43, 43, 0.07);
   /* Progressive: where it is unsupported the pill is simply more opaque. */

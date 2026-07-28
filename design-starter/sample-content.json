@@ -18,10 +18,9 @@
     {
       "type": "social_proof",
       "title": "Loved by 3,100+ buyers",
-      "messages": [
-        "Rated 4.8 out of 5. 94% of reviewers say it kept its shape after washing."
-      ],
-      "icon": "avatars",
+      "body": "Rated 4.8 out of 5. 94% of reviewers say it kept its shape after washing.",
+      "icon": "star",
+      "toastIcon": "avatars",
       "placement": "toast"
     },
     {

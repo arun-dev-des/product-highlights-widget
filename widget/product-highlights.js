@@ -16,6 +16,14 @@
  * placed falls back to the list — no anchor match, unknown placement, a second
  * item asking for the toast. Every item always ends up somewhere.
  *
+ * A merchant who wants everything in one place says so with `layout`:
+ * 'distributed' is the default above, 'list' puts every item in the inline list
+ * with its body, 'compact' lays them out two across with the mark above the
+ * text, 'simple' lays them out three across with titles alone, and 'accordion'
+ * keeps the bodies behind a disclosure that opens one at a time. All four
+ * single-surface layouts are built out of the fallback rule rather than out of
+ * a second renderer.
+ *
  * Design notes live in docs/decisions/. In short:
  *   - ADR 0001: everything renders inside a shadow root, so neither the host
  *     page nor this widget can restyle the other by accident.
@@ -81,10 +89,9 @@ const TOKENS = `
   --hl-ink: #2b2b2b;
   --hl-ink-muted: #6f675b;
   --hl-border: #e4ddcf;
-  --hl-accent: #2b2b2b;
   /* Peak colour of the emphasis sweep. A warm amber rather than a brand
      colour: it echoes the page's own #b3a894 / #e4ddcf warmth and clears
-     WCAG AA against white at roughly 5.7:1. Saturating further lightens it
+     WCAG AA against white at roughly 5.9:1. Saturating further lightens it
      below the 4.5:1 threshold, so this is the ceiling. */
   --hl-shimmer: #8a5a1f;
   --hl-radius: 4px;
@@ -180,6 +187,238 @@ const LIST_STYLES = `
   line-height: 1.55;
   color: var(--hl-ink-muted);
   text-wrap: pretty;
+}
+
+/* --- Grid layouts -------------------------------------------------------- */
+
+/* Two centred variants sharing one treatment: the mark leads, the claim sits
+   under it, and in "compact" a supporting line sits under that.
+   "simple" is the same cell with the supporting line withheld.
+
+   Hierarchy is still carried by size and colour rather than weight, as in the
+   inline list — Georgia has no light-touch bold at this size, and a grid of
+   bold serif headings reads considerably louder than the page around it. */
+.list[data-layout="compact"],
+.list[data-layout="simple"] {
+  column-gap: calc(var(--hl-space) * 5);
+  row-gap: calc(var(--hl-space) * 2);
+}
+
+/* Track minimums chosen so a product details column yields the intended count —
+   two for compact, three for simple — and a narrower one drops a column rather
+   than crushing the measure. The min() wrapper keeps a single item from
+   overflowing a container narrower than the track itself. */
+.list[data-layout="compact"] {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+}
+.list[data-layout="simple"] {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+}
+
+.list[data-layout="compact"] .item,
+.list[data-layout="simple"] .item {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--hl-space) * 2.5);
+  padding: calc(var(--hl-space) * 4) calc(var(--hl-space) * 1.5);
+}
+
+/* Larger than the list's 24px gutter mark. With no text beside it the icon is
+   carrying the cell on its own, and at gutter size it reads as an afterthought. */
+.list[data-layout="compact"] .icon,
+.list[data-layout="simple"] .icon {
+  width: 30px;
+  height: 30px;
+  margin-top: 0;
+}
+
+.list[data-layout="compact"] .text,
+.list[data-layout="simple"] .text { width: 100%; }
+
+.list[data-layout="compact"] .title,
+.list[data-layout="simple"] .title {
+  font-size: 15px;
+  line-height: 1.3;
+  /* Two-word and five-word titles share a row, so an even rag reads better
+     than a ragged one. */
+  text-wrap: balance;
+}
+
+.list[data-layout="compact"] .body {
+  margin-top: calc(var(--hl-space) * 0.75);
+  font-size: 13.5px;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
+/* --- Accordion ----------------------------------------------------------- */
+
+/* The one layout that trades a click for a shorter resting state. The default
+   list exists because five items at this length simply fit; this is for the
+   payload where they do not. */
+.list[data-layout="accordion"] .item {
+  display: block;
+  padding: 0;
+}
+
+/* A rule between rows rather than a box around each — the same hairline
+   language as the edges of the section. */
+.list[data-layout="accordion"] .item + .item {
+  border-top: 1px solid var(--hl-border);
+}
+
+/* A real <button>, so Enter, Space, focus and the expanded/collapsed
+   announcement all come from the platform rather than from us. */
+.head {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--hl-space) * 4.5);
+  width: 100%;
+  padding: calc(var(--hl-space) * 3.5) 0;
+  font-family: inherit;
+  color: var(--hl-ink);
+  text-align: start;
+}
+
+button.head { cursor: pointer; }
+
+/* all: unset takes the UA focus ring with it, so it goes back explicitly. */
+button.head:focus-visible {
+  outline: 2px solid var(--hl-ink);
+  outline-offset: 2px;
+}
+
+.head .title { flex: 1 1 auto; min-width: 0; }
+
+.chev {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  color: var(--hl-ink-muted);
+  transition: transform 260ms var(--_ease);
+}
+.chev svg { display: block; width: 100%; height: 100%; }
+.item[data-open] .chev { transform: rotate(180deg); }
+
+/* Rows animate open on grid-template-rows rather than on a measured pixel
+   height: the browser resolves the content height itself, so there is no
+   measurement to take, cache or invalidate when the text reflows. */
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 320ms var(--_ease);
+}
+.item[data-open] .panel { grid-template-rows: 1fr; }
+
+.panel .wrap {
+  overflow: hidden;
+  /* Out of the accessibility tree while closed, so a screen reader is not read
+     the body of a row that presents itself as collapsed. Delayed on the way
+     shut so it outlasts the collapse, immediate on the way open. */
+  visibility: hidden;
+  transition: visibility 0s linear 320ms;
+}
+.item[data-open] .panel .wrap { visibility: visible; transition-delay: 0s; }
+
+/* Indented past the icon so the body hangs under the title, not under the mark.
+   Logical padding, so a right-to-left column indents from the correct edge. */
+.panel .body {
+  margin: 0;
+  padding-block: 0 calc(var(--hl-space) * 3.5);
+  padding-inline-start: calc(var(--_icon) + var(--hl-space) * 4.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel, .panel .wrap, .chev { transition: none; }
+}
+
+@media (forced-colors: active) {
+  .list[data-layout="accordion"] .item + .item { border-color: CanvasText; }
+  button.head:focus-visible { outline-color: Highlight; }
+}
+
+/* --- Animated steps ------------------------------------------------------ */
+
+/* The accordion, cycling through its rows on its own. Each row is led by its
+   mark, as everywhere else in the widget; what distinguishes the active row is
+   colour and the fill on its bottom edge, not a different anatomy. */
+.list[data-layout="steps"] .item {
+  display: block;
+  padding: 0;
+  position: relative;
+}
+
+.list[data-layout="steps"] .item + .item {
+  border-top: 1px solid var(--hl-border);
+}
+
+/* The active row takes the emphasis colour the toast sweep uses. It is the one
+   token in the contract already chosen against a contrast threshold, so it is
+   the right one to reach for when a row has to stand out from its neighbours. */
+.list[data-layout="steps"] .item[data-open] .icon,
+.list[data-layout="steps"] .item[data-open] .title { color: var(--hl-shimmer); }
+
+.dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: 8px;
+  background: var(--hl-shimmer);
+  opacity: 0;
+  transition: opacity 240ms var(--_ease);
+}
+.list[data-layout="steps"] .item[data-open] .dot { opacity: 1; }
+
+/* On the row's own bottom edge, so the fill reads as this row's time running
+   out rather than as a progress bar for the whole list. */
+.track {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 2px;
+  overflow: hidden;
+}
+
+/* Grown with width from the inline start rather than scaled with a transform,
+   because the inline start follows the writing direction and a transform origin
+   does not — in a right-to-left column the fill has to run the other way. */
+.bar {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 0;
+  background: var(--hl-shimmer);
+}
+.list[data-layout="steps"] .item[data-open] .bar {
+  animation: hl-fill 3s linear forwards;
+}
+
+@keyframes hl-fill { from { width: 0; } to { width: 100%; } }
+
+/* The hold on hover and focus is driven from script rather than from a
+   :hover rule here. A CSS pause stops the fill but not the timer that advances
+   the row, and the two then disagree — the indicator freezes while the sequence
+   carries on without it. One authority, in bindSteps. */
+
+/* Once the sequence has finished, or a shopper has taken it over, the indicator
+   has nothing left to report. */
+.list[data-layout="steps"]:not([data-playing]) .track { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .list[data-layout="steps"] .track { display: none; }
+  .dot { transition: none; }
+}
+
+@media (forced-colors: active) {
+  .list[data-layout="steps"] .item + .item { border-color: CanvasText; }
+  .list[data-layout="steps"] .item[data-open] .icon,
+  .list[data-layout="steps"] .item[data-open] .title { color: Highlight; }
+  .bar { background: Highlight; }
+  .dot { background: Highlight; }
 }
 
 /* --- Rating panel -------------------------------------------------------- */
@@ -488,8 +727,16 @@ const BADGE_STYLES = `
   max-width: 100%;
   box-sizing: border-box;
   padding: calc(var(--hl-space) * 1.75) calc(var(--hl-space) * 3);
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(228, 221, 207, 0.9);
+  /* Tokenised, not literal. These were once the default hex values written out
+     with alpha, which meant the label followed --hl-ink while the pill stayed
+     white — on any dark theme the badge disappeared into its own background.
+     The solid colour is declared first so an engine without color-mix gets an
+     opaque pill rather than none; the translucency is what the backdrop-filter
+     below has to work with. */
+  background: var(--hl-surface-raised);
+  background: color-mix(in srgb, var(--hl-surface-raised) 92%, transparent);
+  border: 1px solid var(--hl-border);
+  border-color: color-mix(in srgb, var(--hl-border) 90%, transparent);
   border-radius: 999px;
   box-shadow: 0 2px 10px rgba(43, 43, 43, 0.08);
   /* Progressive: where it is unsupported the pill is simply more opaque. */
@@ -610,6 +857,30 @@ const isNonEmptyString = (v) => typeof v === 'string' && v.trim().length > 0;
 
 const PLACEMENTS = new Set(['list', 'toast', 'badge', 'rating']);
 
+/**
+ * How the payload is presented.
+ *
+ *   distributed  four placements, each item where it declared it belongs (default)
+ *   list         every item in one list, title and body
+ *   compact      every item in a two-column grid — mark, title, body
+ *   simple       every item in a three-column grid — mark and title only
+ *   accordion    every item in one list, bodies behind a disclosure, one at a time
+ *   steps        the accordion, cycling through its rows continuously
+ *
+ * The five single-surface layouts are not a second rendering path. They turn
+ * the other surfaces off, and ADR 0003's fallback rule does the rest — a
+ * suppressed surface returns its items to the list rather than dropping them,
+ * which is the same road an explicit `toast: false` already travels.
+ *
+ * 'accordion' and 'steps' are the two layouts that change the markup rather than
+ * only the CSS, because a disclosure needs a real button to be operable. Both
+ * are offered and neither is the default: hiding a body costs a click to reach
+ * the most useful sentence in the payload, which is the trade the inline list
+ * declines to make, and 'steps' additionally asserts an order the demo payload
+ * does not have.
+ */
+const LAYOUTS = new Set(['distributed', 'list', 'compact', 'simple', 'accordion', 'steps']);
+
 /** Finite, positive, and within bounds — or null. Merchant numbers are input. */
 function finiteInRange(v, min, max) {
   return typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max ? v : null;
@@ -637,6 +908,12 @@ function normalise(content) {
       icon: Object.prototype.hasOwnProperty.call(ICONS, raw.icon) && raw.icon[0] !== '_'
         ? raw.icon
         : '_fallback',
+      // Optional toast-only override, because one item can present differently
+      // per surface: the demo's social proof is an avatar stack in the toast
+      // and a star in the list layouts. Null means "same as icon".
+      toastIcon: Object.prototype.hasOwnProperty.call(ICONS, raw.toastIcon) && raw.toastIcon[0] !== '_'
+        ? raw.toastIcon
+        : null,
       // Unknown or absent placement means the list, which every item can use.
       placement: PLACEMENTS.has(raw.placement) ? raw.placement : 'list',
       anchor: isNonEmptyString(raw.anchor) ? raw.anchor.trim() : null,
@@ -706,6 +983,200 @@ function starRow(cls) {
   return h('span', { class: `stars-row ${cls}`, html: STAR.repeat(5) });
 }
 
+/** The accordion's open/closed affordance. Decorative — the button's
+ *  aria-expanded is what carries the state to assistive technology. */
+const chevron = () =>
+  h('span', {
+    class: 'chev',
+    'aria-hidden': 'true',
+    html:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" ' +
+      'stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5l6 6 6-6"/></svg>',
+  });
+
+/**
+ * Wire up a single-open accordion.
+ *
+ * Delegated from the list rather than bound per row, so there is one listener
+ * however long the payload is, and nothing to detach when the list is replaced.
+ */
+function bindAccordion(list) {
+  list.addEventListener('click', (e) => {
+    const head = e.target.closest && e.target.closest('button.head');
+    if (!head || !list.contains(head)) return;
+
+    const row = head.parentElement;
+    const opening = !row.hasAttribute('data-open');
+
+    // One at a time: whatever else is open closes first.
+    for (const other of list.querySelectorAll('.item[data-open]')) {
+      if (other === row) continue;
+      other.removeAttribute('data-open');
+      const otherHead = other.querySelector('button.head');
+      if (otherHead) otherHead.setAttribute('aria-expanded', 'false');
+    }
+
+    row.toggleAttribute('data-open', opening);
+    head.setAttribute('aria-expanded', String(opening));
+  });
+}
+
+/**
+ * Play an accordion through its rows, continuously.
+ *
+ * Perpetual motion inside the column is a bolder claim than the toast's corner
+ * pill makes, so this keeps every civility the toast has, and they are the
+ * whole design of this function:
+ *
+ *   - It **pauses** while the pointer is over it or focus is inside it, and
+ *     resumes on what is left of the dwell rather than a fresh one, so a row
+ *     never advances out from under someone reading it.
+ *   - It **pauses entirely while the tab is hidden** — an endless animation
+ *     nobody is watching is just battery.
+ *   - The **first click ends it for good**, leaving an ordinary accordion. A
+ *     shopper who takes control keeps it.
+ *   - Under **reduced motion** it never plays at all. Every row is reachable by
+ *     click, so unlike the toast nothing is put out of reach by staying still.
+ *
+ * The fill animation is the clock rather than a second timer running alongside
+ * it, so the indicator and the advance cannot drift apart. The timer that
+ * remains is only a backstop for the case where `animationend` never arrives.
+ */
+function bindSteps(list) {
+  const rows = [...list.querySelectorAll('.item')];
+  if (rows.length === 0) return;
+
+  const show = (i) => {
+    rows.forEach((row, n) => {
+      const on = n === i;
+      row.toggleAttribute('data-open', on);
+      const head = row.querySelector('button.head');
+      if (head) head.setAttribute('aria-expanded', String(on));
+    });
+  };
+
+  // Reduced motion gets the content, not the performance. Every row is
+  // reachable by click here — unlike the toast, where the rotation is the only
+  // route to the second line — so there is nothing to put out of reach by
+  // simply not playing.
+  if (prefersReducedMotion()) {
+    show(0);
+    return;
+  }
+
+  let current = 0;
+  let backstop = 0;
+  let token = 0;
+  let stopped = false;
+  let paused = false;
+
+  /** The fill's animation, which is also the clock for the current row. */
+  const fill = () => {
+    const bar = rows[current] && rows[current].querySelector('.bar');
+    return bar && bar.getAnimations ? bar.getAnimations()[0] || null : null;
+  };
+
+  const stop = () => {
+    if (stopped) return;
+    stopped = true;
+    token++;
+    clearTimeout(backstop);
+    list.removeAttribute('data-playing');
+    document.removeEventListener('visibilitychange', onVisibility);
+  };
+
+  const hold = () => {
+    if (stopped || paused) return;
+    paused = true;
+    clearTimeout(backstop);
+    const a = fill();
+    if (a && a.playState === 'running') a.pause();
+  };
+
+  const release = () => {
+    if (stopped || !paused) return;
+    paused = false;
+    const a = fill();
+    // Resume on what is left rather than on a fresh dwell, so a glance does not
+    // reset a row the shopper has already half read.
+    let remaining = 800;
+    if (a) {
+      a.play();
+      const total = a.effect && a.effect.getTiming ? a.effect.getTiming().duration : null;
+      if (typeof total === 'number') remaining = Math.max(0, total - (a.currentTime || 0)) + 800;
+    }
+    const mine = token;
+    backstop = setTimeout(() => { if (mine === token) advance(); }, remaining);
+  };
+
+  const step = (i) => {
+    if (stopped) return;
+    current = i;
+    show(i);
+
+    const row = rows[i];
+    const source = row.querySelector('.body') || row.querySelector('.title');
+    const ms = dwellFor(source ? source.textContent : '');
+
+    const bar = row.querySelector('.bar');
+    if (bar) {
+      // Restart the fill from zero: the same element is reused each turn, so
+      // the animation has to be taken off and reflowed before it will replay.
+      bar.style.animation = 'none';
+      void bar.offsetWidth;
+      bar.style.animation = '';
+      bar.style.animationDuration = `${ms}ms`;
+    }
+
+    const mine = ++token;
+    clearTimeout(backstop);
+    backstop = setTimeout(() => { if (mine === token) advance(); }, ms + 800);
+  };
+
+  function advance() {
+    if (stopped) return;
+    // Wraps rather than ending: the sequence is a standing rotation, and it
+    // stops only when a shopper takes it over.
+    step((current + 1) % rows.length);
+  }
+
+  list.addEventListener('animationend', (e) => {
+    if (stopped || paused || e.animationName !== 'hl-fill') return;
+    advance();
+  });
+
+  list.addEventListener('pointerenter', hold);
+  list.addEventListener('pointerleave', release);
+  list.addEventListener('focusin', hold);
+  list.addEventListener('focusout', (e) => {
+    // Tabbing between two headers inside the list is not leaving it.
+    if (e.relatedTarget && list.contains(e.relatedTarget)) return;
+    release();
+  });
+
+  // A document-level listener on a widget that can be remounted must clean up
+  // after itself; the list going out of the document is the teardown signal.
+  const onVisibility = () => {
+    if (!list.isConnected) {
+      document.removeEventListener('visibilitychange', onVisibility);
+      return;
+    }
+    if (document.hidden) hold();
+    else release();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+
+  // Any interaction hands the list over permanently; bindAccordion is already
+  // listening on the same element and does the opening and closing from here.
+  list.addEventListener('click', () => stop());
+  list.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') stop();
+  });
+
+  list.setAttribute('data-playing', '');
+  step(0);
+}
+
 function buildRating(item) {
   const pct = Math.max(0, Math.min(100, (item.rating / item.scale) * 100));
   // One decimal place unless the score is whole, so 5 reads as "5" not "5.0".
@@ -727,32 +1198,90 @@ function buildRating(item) {
   );
 }
 
-function buildList(items, label) {
-  // A real list, so assistive technology announces the set and its length
-  // before reading through it.
+function buildList(items, label, layout) {
+  const grid = layout === 'compact' || layout === 'simple';
+  const stepper = layout === 'steps';
+  const accordion = layout === 'accordion' || stepper;
+  const stamped = grid || accordion;
+
+  // A real list in every layout, so assistive technology announces the set and
+  // its length before reading through it. Four of the five layouts also share
+  // one row shape and differ only in CSS; the accordion is the exception,
+  // because a disclosure has to be a button to be operable.
   const list = h('ul', {
     class: 'list',
     'aria-label': label,
-    'data-cols': String(items.length <= 3 ? items.length : 1),
+    'data-layout': stamped ? layout : null,
+    // The two- and three-across rule belongs to the default row; a grid sets its
+    // own tracks and the two would fight.
+    'data-cols': stamped ? null : String(items.length <= 3 ? items.length : 1),
   });
 
   items.forEach((item, i) => {
-    list.appendChild(
-      h('li', { class: 'item', style: `--i:${i}` },
+    const row = h('li', { class: 'item', style: `--i:${i}` });
+
+    if (accordion) {
+      // A row with nothing to reveal is not a control. Giving it a button, a
+      // chevron and an aria-expanded that never changes would be an interaction
+      // that exists so that there is an interaction.
+      const hasBody = Boolean(item.body);
+      const headId = `hl-acc-h-${i}`;
+      const panelId = `hl-acc-p-${i}`;
+
+      row.appendChild(
+        h(hasBody ? 'button' : 'div', {
+          class: 'head',
+          type: hasBody ? 'button' : null,
+          id: hasBody ? headId : null,
+          'aria-expanded': hasBody ? 'false' : null,
+          'aria-controls': hasBody ? panelId : null,
+        },
+          icon(ICONS[item.icon]),
+          h('span', { class: 'title', text: item.title }),
+          // The dot replaces the chevron in the stepper: a chevron promises
+          // that a click is required, and here the row advances on its own.
+          stepper
+            ? h('span', { class: 'dot', 'aria-hidden': 'true' })
+            : (hasBody ? chevron() : null)
+        )
+      );
+
+      if (hasBody) {
+        row.appendChild(
+          h('div', { class: 'panel', id: panelId, role: 'region', 'aria-labelledby': headId },
+            h('div', { class: 'wrap' }, h('p', { class: 'body', text: item.body }))
+          )
+        );
+      }
+
+      if (stepper) {
+        row.appendChild(h('span', { class: 'track', 'aria-hidden': 'true' }, h('span', { class: 'bar' })));
+      }
+    } else {
+      // 'simple' is the mark and the claim, nothing else.
+      const body = layout === 'simple' ? null : item.body;
+      row.append(
         icon(ICONS[item.icon]),
         h('div', { class: 'text' },
           h('p', { class: 'title', text: item.title }),
-          item.body ? h('p', { class: 'body', text: item.body }) : null
+          body ? h('p', { class: 'body', text: body }) : null
         )
-      )
-    );
+      );
+    }
+
+    list.appendChild(row);
   });
+
+  // The stepper is an accordion that starts itself: the same click-to-toggle
+  // behaviour underneath, with the sequence layered on top.
+  if (accordion) bindAccordion(list);
+  if (stepper) bindSteps(list);
 
   return { root: h('div', { class: 'root' }, list), list };
 }
 
-function buildRoot(items, label, rating) {
-  const { root, list } = buildList(items, label);
+function buildRoot(items, label, rating, layout) {
+  const { root, list } = buildList(items, label, layout);
   if (rating) root.insertBefore(buildRating(rating), list);
   return { root, list };
 }
@@ -776,23 +1305,30 @@ function showToast(item) {
 
   const shadow = shadowWith(host, TOAST_STYLES);
 
-  // The title is frame zero; declared messages follow it. One frame means no
-  // rotation at all, which is the correct behaviour for a payload without them.
-  const lines = [item.title, ...item.messages];
+  // The title is frame zero; declared messages follow it. A payload with a
+  // body but no messages rotates the body instead: the toast is a one-line
+  // pill, and a second line it can show one at a time should not force a
+  // second row. A payload with neither is a single frame, and a single frame
+  // never rotates.
+  const promoted = item.messages.length === 0 && item.body;
+  const lines = promoted ? [item.title, item.body] : [item.title, ...item.messages];
   const frames = lines.map((text, i) =>
     h('span', { class: 'frame', 'data-pos': i === 0 ? 'current' : 'below', text })
   );
   const rotator = h('p', { class: 'title rotator' }, ...frames);
 
   // The toast has room for the richer treatment; the list's icon column is a
-  // fixed 24px gutter, so it keeps the plain glyph.
-  const mark = item.icon === 'avatars' ? avatarStack() : icon(ICONS[item.icon]);
+  // fixed 24px gutter, so it keeps the plain glyph. `toastIcon` is honoured
+  // only here — it exists so one item can lead with an avatar stack in the
+  // toast and a star everywhere else.
+  const glyph = item.toastIcon || item.icon;
+  const mark = glyph === 'avatars' ? avatarStack() : icon(ICONS[glyph]);
 
   const pill = h('div', { class: 'pill' },
     mark,
     h('div', { class: 'text' },
       rotator,
-      item.body ? h('p', { class: 'body', text: item.body }) : null
+      !promoted && item.body ? h('p', { class: 'body', text: item.body }) : null
     )
   );
   shadow.appendChild(pill);
@@ -1032,6 +1568,16 @@ function playEntrance(root, list, onReveal) {
  * Mount
  * ---------------------------------------------------------------------- */
 
+/* A host can legitimately be mounted more than once — a replay from the dev
+   harness, the theme panel switching layouts, a second copy of the script tag.
+   The payload fetch makes mount() async, so two calls can interleave, and
+   without a guard the slower *fetch* would decide the final render rather than
+   the later *call*. A sequence number on the host makes ownership explicit:
+   each call takes the next number on entry, and a call that comes back from an
+   await to find a newer number stops and renders nothing. A Symbol key so the
+   marker cannot collide with anything the merchant's page puts on the element. */
+const MOUNT_SEQ = Symbol('product-highlights-mount');
+
 /**
  * Render the widget into `target`.
  *
@@ -1040,14 +1586,22 @@ function playEntrance(root, list, onReveal) {
  * @param {object}  [options.content]   Content payload. Takes precedence over url.
  * @param {string}  [options.url]       URL to fetch the payload from.
  * @param {string}  [options.label]     Accessible name for the list.
+ * @param {string}  [options.layout]    'distributed' (default), 'list', 'compact',
+ *                                      'simple' or 'accordion'. The last four
+ *                                      render every item in one place; 'simple'
+ *                                      shows titles only, 'accordion' puts
+ *                                      bodies behind a disclosure.
  * @param {boolean} [options.toast]     Set false to keep toast items in the list.
  * @param {boolean} [options.badges]    Set false to keep badge items in the list.
+ * @param {boolean} [options.rating]    Set false to keep the rating item in the list.
  * @returns {Promise<Element|null>}     The host element, or null if nothing rendered.
  */
 export async function mount(target, options = {}) {
   try {
     const host = typeof target === 'string' ? document.querySelector(target) : target;
     if (!host) return null;
+
+    const seq = (host[MOUNT_SEQ] = (host[MOUNT_SEQ] || 0) + 1);
 
     let content = options.content;
     if (!content && options.url) {
@@ -1056,31 +1610,50 @@ export async function mount(target, options = {}) {
       content = await res.json();
     }
 
+    // Checkpoint after the async gap: if a newer mount claimed this host while
+    // the payload was in flight, this call is stale. Rendering anyway would
+    // paint an old configuration over the one the newer call asked for.
+    if (host[MOUNT_SEQ] !== seq) return null;
+
     const items = normalise(content);
     // Nothing renderable: leave the page exactly as we found it. No empty
     // box, no stray rule, no reserved space.
     if (items.length === 0) return null;
 
+    const layout = LAYOUTS.has(options.layout) ? options.layout : 'distributed';
     const resolved = resolvePlacements(items);
+
+    // A single-surface layout is expressed as suppression, not as a second
+    // rendering path: it turns the other surfaces off and lets them fall back.
+    const single = layout !== 'distributed';
+    const wantToast = options.toast !== false && !single;
+    const wantBadges = options.badges !== false && !single;
+    const wantRating = options.rating !== false && !single;
+
     // Suppressing a surface returns its items to the list rather than dropping
     // them, so the payload always renders in full.
     const listItems = [...resolved.list];
-    if (options.toast === false && resolved.toast) listItems.push(resolved.toast);
-    if (options.badges === false) listItems.push(...resolved.badges.map((b) => b.item));
-    if (options.rating === false && resolved.rating) listItems.push(resolved.rating);
+    if (!wantToast && resolved.toast) listItems.push(resolved.toast);
+    if (!wantBadges) listItems.push(...resolved.badges.map((b) => b.item));
+    if (!wantRating && resolved.rating) listItems.push(resolved.rating);
     listItems.sort((a, b) => items.indexOf(a) - items.indexOf(b));
 
     const shadow = shadowWith(host, LIST_STYLES);
     const { root, list } = buildRoot(
       listItems,
       options.label || 'Product highlights',
-      options.rating === false ? null : resolved.rating
+      wantRating ? resolved.rating : null,
+      layout
     );
     shadow.appendChild(root);
 
     playEntrance(root, list, () => {
-      if (options.toast !== false) showToast(resolved.toast);
-      if (options.badges !== false) resolved.badges.forEach(showBadge);
+      // The reveal arrives on its own schedule — an observer callback or the
+      // backstop timer — so it too can outlive its mount. A superseded mount
+      // must not float a toast or badge belonging to a render that is gone.
+      if (host[MOUNT_SEQ] !== seq) return;
+      if (wantToast) showToast(resolved.toast);
+      if (wantBadges) resolved.badges.forEach(showBadge);
     });
 
     return host;
@@ -1109,5 +1682,6 @@ if (tag) {
   mount(tag.dataset.mount, {
     url: tag.dataset.content,
     label: tag.dataset.label || undefined,
+    layout: tag.dataset.layout || undefined,
   });
 }

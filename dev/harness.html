@@ -64,6 +64,41 @@
     </section>
 
     <section>
+      <h2>Layout — inline list</h2>
+      <p class="note">Every item in one place, titles and bodies. <code>layout: 'list'</code>.</p>
+      <div class="frame"><div id="lay-list"></div></div>
+      <p class="expect">Five rows. The toast and badge items return to the list rather than floating — no surface is suppressed by hand.</p>
+    </section>
+
+    <section>
+      <h2>Layout — compact grid</h2>
+      <p class="note">Two columns, mark above title above body. <code>layout: 'compact'</code>.</p>
+      <div class="frame"><div id="lay-compact"></div></div>
+      <p class="expect">Five cells across two columns, each with its body. Nothing floating.</p>
+    </section>
+
+    <section>
+      <h2>Layout — super simple</h2>
+      <p class="note">Three columns, mark and title only. <code>layout: 'simple'</code>.</p>
+      <div class="frame"><div id="lay-simple"></div></div>
+      <p class="expect">Five cells across three columns, no bodies at all. Titles should not break at a hyphen.</p>
+    </section>
+
+    <section>
+      <h2>Layout — accordion</h2>
+      <p class="note">Titles upfront, bodies behind a disclosure, one open at a time. <code>layout: 'accordion'</code>.</p>
+      <div class="frame"><div id="lay-accordion"></div></div>
+      <p class="expect">Five rows separated by hairlines. Clicking one opens it and closes any other. Tab reaches each header; Enter and Space work. A row with no body is not a button and has no chevron.</p>
+    </section>
+
+    <section>
+      <h2>Layout — animated steps</h2>
+      <p class="note">Accordion that cycles through its rows on its own. <code>layout: 'steps'</code>.</p>
+      <div class="frame"><div id="lay-steps"></div></div>
+      <p class="expect">Rows open in turn and the cycle repeats after the last row, each with a fill on its bottom edge sized to its dwell. Hovering holds the current row; a hidden tab pauses it entirely. Clicking ends the sequence for good and leaves a plain accordion. Under reduced motion it does not play at all — row one is simply open.</p>
+    </section>
+
+    <section>
       <h2>Empty array</h2>
       <p class="note">Should render nothing at all — no box, no rule.</p>
       <div class="frame"><div id="empty"></div></div>
@@ -79,7 +114,7 @@
   </div>
 
   <script type="module">
-    import { mount, _reset } from '../widget/product-highlights.js';
+    import { mount, _reset } from '../widget/product-highlights.js?v=8';
 
     const full = await fetch('../design-starter/sample-content.json').then((r) => r.json());
 
@@ -101,6 +136,21 @@
       { title: 'Rating with no score', body: 'Demotes to a list row rather than an empty panel.',
         placement: 'rating', icon: 'star' },
     ] } });
+
+    // No `toast: false` here on purpose: a single-surface layout suppresses the
+    // floating surfaces itself, and that is the thing being checked.
+    mount('#lay-list', { content: full, layout: 'list' });
+    mount('#lay-compact', { content: full, layout: 'compact' });
+    mount('#lay-simple', { content: full, layout: 'simple' });
+
+    // A ragged payload on purpose: the second item has no body, so it must
+    // render as a plain row rather than a disclosure that reveals nothing.
+    mount('#lay-accordion', { layout: 'accordion', content: { highlights: [
+      ...full.highlights,
+      { title: 'A row with no body at all', icon: 'shield' },
+    ] } });
+
+    mount('#lay-steps', { content: full, layout: 'steps' });
 
     mount('#empty', { toast: false, content: { highlights: [] } });
 

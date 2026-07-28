@@ -5,121 +5,352 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Product Highlights — dev harness</title>
   <style>
-    body { margin: 0; font: 15px/1.5 ui-sans-serif, system-ui, sans-serif;
-           color: #1c1c1c; background: #fdfcf9; }
-    .wrap { max-width: 620px; margin: 0 auto; padding: 32px 24px 96px; }
-    h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
-    .lede { color: #6b6b6b; margin: 0 0 32px; }
-    section { margin: 0 0 40px; }
-    h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
-         color: #8a8a8a; font-weight: 600; margin: 0 0 4px; }
-    .note { color: #6b6b6b; font-size: 13px; margin: 0 0 12px; }
-    .expect { color: #8a8a8a; font-size: 12px; margin: 8px 0 0; font-style: italic; }
-    button { font: inherit; padding: 8px 14px; border: 1px solid #d8d2c6;
-             border-radius: 6px; background: #fff; cursor: pointer; }
-    button:hover { background: #f4f1ea; }
-    .bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
-    .frame { border: 1px dashed #ddd6c8; border-radius: 6px; padding: 0 16px; }
+    /* Harness chrome is sans on purpose: everything inside a dashed frame is
+       the widget, everything outside it is scaffolding, and the type tells you
+       which is which without a label. */
+    :root {
+      --ink: #1c1c1c;
+      --muted: #6b6b6b;
+      --faint: #a09a8e;
+      --line: #e4ddcf;
+      --accent: #8a5a1f;
+      --page: #fdfcf9;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      background: var(--page);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { max-width: 660px; margin: 0 auto; padding: 56px 24px 120px; }
+
+    /* --- Masthead --------------------------------------------------------- */
+
+    h1 { font-size: 21px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
+    .lede { color: var(--muted); margin: 0 0 28px; max-width: 52ch; text-wrap: pretty; }
+
+    .index {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 0 32px;
+      border-bottom: 1px solid var(--line);
+      margin: 0 0 8px;
+    }
+    .index a {
+      font-size: 12.5px;
+      text-decoration: none;
+      color: var(--muted);
+      padding: 5px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+    }
+    .index a:hover { color: var(--accent); border-color: #d8ccb4; }
+    .index a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* --- Groups ----------------------------------------------------------- */
+
+    section { margin: 48px 0 0; scroll-margin-top: 24px; }
+
+    section > h2 {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin: 0 0 4px;
+    }
+    section > h2 .count { font-weight: 400; letter-spacing: 0.04em; }
+    section > .about { color: var(--muted); font-size: 13.5px; margin: 0 0 8px; max-width: 56ch; }
+
+    /* --- Cases ------------------------------------------------------------ */
+
+    .case { padding: 24px 0; border-top: 1px solid var(--line); }
+
+    .case header { display: flex; align-items: baseline; gap: 10px; margin: 0 0 2px; }
+    .n {
+      font: 500 11px/1 ui-monospace, 'SF Mono', Menlo, monospace;
+      color: var(--faint);
+      letter-spacing: 0.06em;
+      padding-top: 4px;
+    }
+    .case h3 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.005em; }
+    .case h3 em {
+      font-style: normal;
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-left: 6px;
+      vertical-align: 1px;
+    }
+
+    .note { color: var(--muted); font-size: 13.5px; margin: 0 0 12px 26px; max-width: 58ch; text-wrap: pretty; }
+    .note code {
+      font: 12px ui-monospace, 'SF Mono', Menlo, monospace;
+      background: #f2ede3;
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #5b5245;
+    }
+
+    .frame {
+      border: 1px dashed #ddd6c8;
+      border-radius: 8px;
+      padding: 0 18px;
+      margin-left: 26px;
+      background: #fff;
+    }
+
+    .expect {
+      color: var(--faint);
+      font-size: 12.5px;
+      line-height: 1.55;
+      margin: 10px 0 0 26px;
+      max-width: 60ch;
+      text-wrap: pretty;
+    }
+    .expect::before { content: 'Expect — '; color: #c0b8a8; }
+
+    /* --- Controls --------------------------------------------------------- */
+
+    .bar { display: flex; gap: 8px; margin: 0 0 12px 26px; }
+    button {
+      font: inherit;
+      font-size: 13px;
+      padding: 6px 13px;
+      border: 1px solid #d8d2c6;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      color: var(--ink);
+    }
+    button:hover { background: #f4f1ea; border-color: #cfc7b6; }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    @media (max-width: 560px) {
+      .wrap { padding: 40px 18px 80px; }
+      .note, .frame, .expect, .bar { margin-left: 0; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Product Highlights — dev harness</h1>
-    <p class="lede">Replay the emphasis sweep and check how the widget degrades.</p>
+    <p class="lede">
+      Every layout, every content shape and every way the payload can be wrong,
+      on one page. Each case states what should be true, so a wrong result is
+      obvious rather than merely different.
+    </p>
 
-    <section>
-      <h2>Full payload</h2>
-      <p class="note">Five items, one flagged with <code>emphasis</code>.</p>
-      <div class="bar">
-        <button id="replay">Replay</button>
-        <button id="slow">Replay at 1/4 speed</button>
-      </div>
-      <div class="frame"><div id="full"></div></div>
-      <p class="expect">Rows stagger in, then a warm sweep crosses “Loved by 3,100+ buyers” once, left to right.</p>
+    <nav class="index">
+      <a href="#layouts">Layouts</a>
+      <a href="#shapes">Content shapes</a>
+      <a href="#failures">Failure modes</a>
+    </nav>
+
+    <!-- ================================================================= -->
+    <section id="layouts">
+      <h2><span>Layouts</span><span class="count">6</span></h2>
+      <p class="about">
+        One payload, one <code>layout</code> option. The five single-surface
+        layouts are the same fallback rule an explicit <code>toast: false</code>
+        travels, so nothing is dropped — every item lands in the mount.
+      </p>
+
+      <article class="case">
+        <header><span class="n">01</span><h3>Distributed <em>default</em></h3></header>
+        <p class="note">
+          Four placements: three items beside the buy action, the badge on its
+          anchor, the social proof in a floating toast. The only case here that
+          renders the toast — the rest suppress it so it fires from one place.
+        </p>
+        <div class="bar">
+          <button id="replay">Replay</button>
+          <button id="slow">Replay at ¼ speed</button>
+        </div>
+        <div class="frame"><div id="distributed"></div></div>
+        <p class="expect">
+          Rows stagger in, then a warm sweep crosses the toast's first line once,
+          left to right. The toast leads with the avatar stack and rotates between
+          its title and its body; the same item shows a star in every other case,
+          which is <code>toastIcon</code> doing its one job. No badge here — this
+          page has no anchor for it, so it demotes to a list row.
+        </p>
+      </article>
+
+      <article class="case">
+        <header><span class="n">02</span><h3>Inline list</h3></header>
+        <p class="note">Every item in one list, titles and bodies. <code>layout: 'list'</code>.</p>
+        <div class="frame"><div id="lay-list"></div></div>
+        <p class="expect">
+          Five rows. The toast and badge items return to the list rather than
+          floating, and no surface was suppressed by hand to make that happen.
+        </p>
+      </article>
+
+      <article class="case">
+        <header><span class="n">03</span><h3>Compact grid</h3></header>
+        <p class="note">Two columns, mark above title above body. <code>layout: 'compact'</code>.</p>
+        <div class="frame"><div id="lay-compact"></div></div>
+        <p class="expect">Five cells across two columns, each with its body. Nothing floating.</p>
+      </article>
+
+      <article class="case">
+        <header><span class="n">04</span><h3>Super simple</h3></header>
+        <p class="note">Three columns, mark and title only. <code>layout: 'simple'</code>.</p>
+        <div class="frame"><div id="lay-simple"></div></div>
+        <p class="expect">
+          Five cells across three columns, no bodies at all. Titles should not
+          break at a hyphen.
+        </p>
+      </article>
+
+      <article class="case">
+        <header><span class="n">05</span><h3>Accordion</h3></header>
+        <p class="note">
+          Titles upfront, bodies behind a disclosure, one open at a time.
+          <code>layout: 'accordion'</code>. Deliberately ragged: the last item has
+          no body.
+        </p>
+        <div class="frame"><div id="lay-accordion"></div></div>
+        <p class="expect">
+          Six rows separated by hairlines. Clicking one opens it and closes any
+          other. Tab reaches each header; Enter and Space both work. The last row
+          has nothing to reveal, so it is not a button and has no chevron.
+        </p>
+      </article>
+
+      <article class="case">
+        <header><span class="n">06</span><h3>Animated steps</h3></header>
+        <p class="note">
+          The accordion, cycling its rows on its own. <code>layout: 'steps'</code>.
+        </p>
+        <div class="frame"><div id="lay-steps"></div></div>
+        <p class="expect">
+          Rows open in turn and wrap round after the last, each with a fill on its
+          bottom edge sized to its dwell. Hovering holds the current row and
+          resumes on what is left of it, not a fresh one; a hidden tab pauses it
+          entirely. Clicking ends the sequence for good and leaves a plain
+          accordion. Under reduced motion it never plays — row one is simply open.
+        </p>
+      </article>
     </section>
 
-    <section>
-      <h2>Three items</h2>
-      <p class="note">Should lay out side by side where there is room.</p>
-      <div class="frame"><div id="three"></div></div>
+    <!-- ================================================================= -->
+    <section id="shapes">
+      <h2><span>Content shapes</span><span class="count">4</span></h2>
+      <p class="about">
+        The same renderer against payloads of different sizes and completeness.
+      </p>
+
+      <article class="case">
+        <header><span class="n">07</span><h3>Three items</h3></header>
+        <p class="note">Should lay out side by side where there is room.</p>
+        <div class="frame"><div id="three"></div></div>
+        <p class="expect">Two or three across, not stacked, at this width.</p>
+      </article>
+
+      <article class="case">
+        <header><span class="n">08</span><h3>One item</h3></header>
+        <p class="note">The smallest payload that still renders.</p>
+        <div class="frame"><div id="one"></div></div>
+        <p class="expect">A single row, hairlines above and below, no empty column beside it.</p>
+      </article>
+
+      <article class="case">
+        <header><span class="n">09</span><h3>Ragged content</h3></header>
+        <p class="note">A missing body, an icon name we do not ship, and copy far longer than any merchant should send.</p>
+        <div class="frame"><div id="ragged"></div></div>
+        <p class="expect">
+          Row one is title-only. Row two falls back to a neutral glyph rather than
+          a gap. Row three wraps rather than clipping. None of it breaks layout.
+        </p>
+      </article>
+
+      <article class="case">
+        <header><span class="n">10</span><h3>Rating panel</h3></header>
+        <p class="note">
+          Score drawn from <code>rating</code> and <code>scale</code>, never parsed
+          out of the sentence beside it.
+        </p>
+        <div class="frame"><div id="rating"></div></div>
+        <p class="expect">
+          4.8 of 5 fills four and four-fifths stars — not rounded up to five. The
+          second entry has no usable score, so it demotes to a list row rather
+          than rendering an empty panel.
+        </p>
+      </article>
     </section>
 
-    <section>
-      <h2>One item</h2>
-      <div class="frame"><div id="one"></div></div>
-    </section>
+    <!-- ================================================================= -->
+    <section id="failures">
+      <h2><span>Failure modes</span><span class="count">2</span></h2>
+      <p class="about">
+        A third-party widget has no business taking a merchant's page down with
+        it. Both of these should leave the page exactly as they found it.
+      </p>
 
-    <section>
-      <h2>Missing body, unknown icon, very long copy</h2>
-      <p class="note">Resilience: none of these should break layout.</p>
-      <div class="frame"><div id="ragged"></div></div>
-      <p class="expect">Row one is title-only. Row two falls back to a neutral glyph. Row three wraps rather than clipping.</p>
-    </section>
+      <article class="case">
+        <header><span class="n">11</span><h3>Empty array</h3></header>
+        <p class="note">Nothing renderable at all.</p>
+        <div class="frame"><div id="empty"></div></div>
+        <p class="expect">The frame below is flat and empty — no box, no stray rule, no reserved space.</p>
+      </article>
 
-    <section>
-      <h2>Rating panel</h2>
-      <p class="note">Score drawn from <code>rating</code> and <code>scale</code>, never parsed from the sentence.</p>
-      <div class="frame"><div id="rating"></div></div>
-      <p class="expect">4.8 of 5 fills four and four-fifths stars. The second entry has no usable score, so it demotes to a list row.</p>
-    </section>
-
-    <section>
-      <h2>Layout — inline list</h2>
-      <p class="note">Every item in one place, titles and bodies. <code>layout: 'list'</code>.</p>
-      <div class="frame"><div id="lay-list"></div></div>
-      <p class="expect">Five rows. The toast and badge items return to the list rather than floating — no surface is suppressed by hand.</p>
-    </section>
-
-    <section>
-      <h2>Layout — compact grid</h2>
-      <p class="note">Two columns, mark above title above body. <code>layout: 'compact'</code>.</p>
-      <div class="frame"><div id="lay-compact"></div></div>
-      <p class="expect">Five cells across two columns, each with its body. Nothing floating.</p>
-    </section>
-
-    <section>
-      <h2>Layout — super simple</h2>
-      <p class="note">Three columns, mark and title only. <code>layout: 'simple'</code>.</p>
-      <div class="frame"><div id="lay-simple"></div></div>
-      <p class="expect">Five cells across three columns, no bodies at all. Titles should not break at a hyphen.</p>
-    </section>
-
-    <section>
-      <h2>Layout — accordion</h2>
-      <p class="note">Titles upfront, bodies behind a disclosure, one open at a time. <code>layout: 'accordion'</code>.</p>
-      <div class="frame"><div id="lay-accordion"></div></div>
-      <p class="expect">Five rows separated by hairlines. Clicking one opens it and closes any other. Tab reaches each header; Enter and Space work. A row with no body is not a button and has no chevron.</p>
-    </section>
-
-    <section>
-      <h2>Layout — animated steps</h2>
-      <p class="note">Accordion that cycles through its rows on its own. <code>layout: 'steps'</code>.</p>
-      <div class="frame"><div id="lay-steps"></div></div>
-      <p class="expect">Rows open in turn and the cycle repeats after the last row, each with a fill on its bottom edge sized to its dwell. Hovering holds the current row; a hidden tab pauses it entirely. Clicking ends the sequence for good and leaves a plain accordion. Under reduced motion it does not play at all — row one is simply open.</p>
-    </section>
-
-    <section>
-      <h2>Empty array</h2>
-      <p class="note">Should render nothing at all — no box, no rule.</p>
-      <div class="frame"><div id="empty"></div></div>
-      <p class="expect">The dashed frame below should be flat and empty.</p>
-    </section>
-
-    <section>
-      <h2>Malformed payload</h2>
-      <p class="note">Items that are strings, nulls, and objects with no title.</p>
-      <div class="frame"><div id="broken"></div></div>
-      <p class="expect">Only the one valid item renders. One console warning at most, no exception.</p>
+      <article class="case">
+        <header><span class="n">12</span><h3>Malformed payload</h3></header>
+        <p class="note">Items that are strings, nulls, numbers, and objects with no title.</p>
+        <div class="frame"><div id="broken"></div></div>
+        <p class="expect">
+          Only the one valid item renders. Everything else is dropped rather than
+          repaired. One console warning at most, and no exception.
+        </p>
+      </article>
     </section>
   </div>
 
   <script type="module">
     import { mount, _reset } from '../widget/product-highlights.js?v=8';
 
-    const full = await fetch('../design-starter/sample-content.json').then((r) => r.json());
+    // Cache-busted: this is a development page, and the payload is the file most
+    // likely to have just been edited.
+    const full = await fetch(`../design-starter/sample-content.json?t=${Date.now()}`)
+      .then((r) => r.json());
 
-    mount('#full', { content: full });
-    // Suppressed on the rest so the toast fires deterministically from one place.
+    /* --- Layouts -------------------------------------------------------- */
+
+    // The only mount with the toast enabled, so it fires deterministically from
+    // one place however many widgets this page puts up.
+    mount('#distributed', { content: full });
+
+    // No `toast: false` on the four below: a single-surface layout suppresses
+    // the floating surfaces itself, and that is the thing being checked.
+    mount('#lay-list', { content: full, layout: 'list' });
+    mount('#lay-compact', { content: full, layout: 'compact' });
+    mount('#lay-simple', { content: full, layout: 'simple' });
+    mount('#lay-steps', { content: full, layout: 'steps' });
+
+    // Ragged on purpose: the extra item has no body, so it must render as a
+    // plain row rather than a disclosure that reveals nothing.
+    mount('#lay-accordion', { layout: 'accordion', content: { highlights: [
+      ...full.highlights,
+      { title: 'A row with no body at all', icon: 'shield' },
+    ] } });
+
+    /* --- Content shapes -------------------------------------------------- */
+
     mount('#three', { content: { highlights: full.highlights.slice(0, 3) }, toast: false });
     mount('#one', { content: { highlights: full.highlights.slice(0, 1) }, toast: false });
 
@@ -137,20 +368,7 @@
         placement: 'rating', icon: 'star' },
     ] } });
 
-    // No `toast: false` here on purpose: a single-surface layout suppresses the
-    // floating surfaces itself, and that is the thing being checked.
-    mount('#lay-list', { content: full, layout: 'list' });
-    mount('#lay-compact', { content: full, layout: 'compact' });
-    mount('#lay-simple', { content: full, layout: 'simple' });
-
-    // A ragged payload on purpose: the second item has no body, so it must
-    // render as a plain row rather than a disclosure that reveals nothing.
-    mount('#lay-accordion', { layout: 'accordion', content: { highlights: [
-      ...full.highlights,
-      { title: 'A row with no body at all', icon: 'shield' },
-    ] } });
-
-    mount('#lay-steps', { content: full, layout: 'steps' });
+    /* --- Failure modes --------------------------------------------------- */
 
     mount('#empty', { toast: false, content: { highlights: [] } });
 
@@ -159,15 +377,21 @@
       { title: 'The only valid item', body: 'Everything else was dropped.', icon: 'star' },
     ] } });
 
+    /* --- Replay ---------------------------------------------------------- */
+
     // Re-mounting replays the entrance, the toast and the sweep from the top.
+    // Quarter speed is for watching the sweep's easing, which is linear on
+    // purpose and hard to judge at full rate.
     const replay = (rate) => {
       _reset();
-      document.querySelector('#full').shadowRoot?.replaceChildren();
-      mount('#full', { content: full }).then(() => {
+      document.querySelector('#distributed').shadowRoot?.replaceChildren();
+      mount('#distributed', { content: full }).then(() => {
         if (rate === 1) return;
         setTimeout(() => {
-          const roots = [document.querySelector('#full').shadowRoot,
-                         document.querySelector('[data-product-highlights="toast"]')?.shadowRoot];
+          const roots = [
+            document.querySelector('#distributed').shadowRoot,
+            document.querySelector('[data-product-highlights="toast"]')?.shadowRoot,
+          ];
           for (const r of roots) {
             if (!r) continue;
             for (const el of r.querySelectorAll('*')) {

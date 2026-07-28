@@ -1,0 +1,5 @@
+/* Shared chrome for the stress pages themselves — never for the widget. */
+.st-note { font: 13px/1.5 ui-monospace, monospace; background: #1c1c1c; color: #e8e4dc;
+  padding: 10px 14px; margin: 0; position: sticky; top: 0; z-index: 50; }
+.st-note b { color: #ffd479; }
+.st-note code { color: #9fd8a0; }

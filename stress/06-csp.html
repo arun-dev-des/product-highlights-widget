@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- No 'unsafe-inline' for styles. This governs <style> elements AND style="" attributes. -->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'">
+<title>Stress 06 — strict CSP</title>
+<link rel="stylesheet" href="_base.css">
+<link rel="stylesheet" href="06-csp.css">
+</head>
+<body>
+<p class="st-note"><b>06 · Strict CSP.</b> <code>style-src 'self'</code> with no
+  <code>'unsafe-inline'</code>, so inline <code>&lt;style&gt;</code> and <code>style=""</code> attributes are
+  both blocked. <b>PASS:</b> the widget still renders and is still styled — constructable stylesheets are not
+  inline styles. <b>Watch for:</b> any surface that depends on inline style attributes for layout or animation.</p>
+<div class="page">
+  <div class="gallery">product image</div>
+  <div class="card"><button class="btn">Add to cart</button></div>
+  <div id="widget-slot"></div>
+  <div class="spacer"></div>
+</div>
+<script src="../react/dist/product-highlights.react.js"
+        data-mount="#widget-slot"
+        data-content="../design-starter/sample-content.json"></script>
+</body></html>

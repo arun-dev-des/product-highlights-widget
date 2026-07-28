@@ -1,0 +1,6 @@
+body { font: 16px Georgia, serif; background: #fdfcf9; color: #2b2b2b; margin: 0; }
+.page { max-width: 900px; margin: 0 auto; padding: 24px; }
+.gallery { background: #ece7dd; height: 120px; border-radius: 4px; }
+.card { border: 1px solid #e4ddcf; border-radius: 4px; padding: 16px; margin: 16px 0; }
+.btn { width: 100%; padding: 14px; background: #2b2b2b; color: #fff; border: 0; border-radius: 4px; }
+.spacer { height: 40vh; }

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stress 04 — nothing to anchor to</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  body { font: 16px Georgia, serif; background: #fdfcf9; color: #2b2b2b; margin: 0; }
+  .page { max-width: 760px; margin: 0 auto; padding: 24px; }
+  .card { border: 1px solid #e4ddcf; border-radius: 4px; padding: 16px; margin: 16px 0; }
+</style></head>
+<body>
+<p class="st-note"><b>04 · No anchor, bad selectors, duplicate claims.</b> No <code>.gallery</code> exists.
+  One item uses a syntactically invalid selector. Two items both claim the toast; two both claim the rating.
+  <b>PASS:</b> six rows in the list, one toast, one rating panel, no badge, no console error.</p>
+<div class="page">
+  <div class="card">Add to cart</div>
+  <div id="widget-slot"></div>
+</div>
+<script src="../react/dist/product-highlights.react.js"></script>
+<script>
+  ProductHighlights.mount('#widget-slot', { content: { highlights: [
+    { title: 'Badge with no anchor element', body: 'Should become a list row.', icon: 'leaf',
+      placement: 'badge', anchor: '.gallery' },
+    { title: 'Badge with an invalid selector', body: 'Must be caught, not thrown.', icon: 'leaf',
+      placement: 'badge', anchor: '>>> not a selector [[' },
+    { title: 'First toast claim', messages: ['This one wins.'], icon: 'avatars', placement: 'toast' },
+    { title: 'Second toast claim', body: 'Loses, so becomes a list row.', icon: 'star', placement: 'toast' },
+    { title: 'Rated 4.8 out of 5', body: 'First rating claim wins.', placement: 'rating', rating: 4.8, scale: 5 },
+    { title: 'Rating with no score', body: 'No stars to draw, so it demotes.', placement: 'rating', icon: 'star' },
+    { title: 'Unknown placement value', body: 'Falls back to the list.', icon: 'truck', placement: 'carousel' },
+  ] } });
+</script>
+</body></html>

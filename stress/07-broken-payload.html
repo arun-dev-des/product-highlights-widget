@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stress 07 — broken payloads</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  body { font: 16px Georgia, serif; background: #fdfcf9; color: #2b2b2b; margin: 0; }
+  .page { max-width: 760px; margin: 0 auto; padding: 24px; }
+  h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #8a8a8a; margin: 24px 0 4px; }
+  .slot { border: 1px dashed #ddd6c8; border-radius: 6px; min-height: 8px; }
+</style></head>
+<body>
+<p class="st-note"><b>07 · Broken payloads.</b> A 404, invalid JSON, wrong shape, and an array of rubbish.
+  <b>PASS:</b> every dashed box below is empty except the last, which renders its one valid row.
+  The page itself must remain completely intact, with at most a console warning each.</p>
+<div class="page">
+  <h3>404 content URL</h3><div class="slot" id="s404"></div>
+  <h3>Invalid JSON</h3><div class="slot" id="sbad"></div>
+  <h3>Right JSON, wrong shape</h3><div class="slot" id="sshape"></div>
+  <h3>Array of rubbish + one valid item</h3><div class="slot" id="srub"></div>
+  <h3>Mount selector matches nothing</h3><div class="slot" id="snone"></div>
+  <p id="canary">If you can read this, the host page survived.</p>
+</div>
+<script src="../react/dist/product-highlights.react.js"></script>
+<script>
+  const M = ProductHighlights.mount;
+  M('#s404',   { url: '../design-starter/does-not-exist.json' });
+  M('#sbad',   { url: './malformed.json' });
+  M('#sshape', { content: { notHighlights: 'nope' } });
+  M('#srub',   { content: { highlights: [
+    'a string', null, 42, [], { }, { body: 'no title' },
+    { title: '   ' }, { title: 'The only valid item', body: 'Everything else was dropped.', icon: 'star' },
+  ] } });
+  M('#does-not-exist', { content: { highlights: [{ title: 'never rendered' }] } });
+</script>
+</body></html>

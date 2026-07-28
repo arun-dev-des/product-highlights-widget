@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Product Highlights — stress suite</title>
+<style>
+  body { font: 15px/1.55 ui-sans-serif, system-ui, sans-serif; color: #1c1c1c; background: #fdfcf9;
+         margin: 0; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .lede { color: #6b6b6b; margin: 0 0 28px; }
+  ol { padding-left: 20px; }
+  li { margin: 0 0 18px; }
+  a { color: #1c1c1c; }
+  .what { color: #6b6b6b; display: block; margin-top: 2px; }
+</style></head>
+<body><div class="wrap">
+<h1>Stress suite</h1>
+<p class="lede">The brief asks that the widget “demonstrably work when dropped into a page like the one
+provided.” These are pages <em>unlike</em> the one provided — each isolating a way a real storefront
+breaks embedded code. Every page states its own pass condition.</p>
+<ol>
+  <li><a href="01-hostile-css.html">Hostile CSS</a>
+    <span class="what"><code>!important</code> on every generic class the widget uses, plus element
+    selectors on div/p/span/svg/ul. Tests the isolation claim in ADR 0001.</span></li>
+  <li><a href="02-transformed-ancestor.html">Transformed ancestor</a>
+    <span class="what">transform → filter → perspective → contain nested above the mount. Each makes an
+    ancestor a containing block for <code>position: fixed</code>. Tests why the toast lives on the body.</span></li>
+  <li><a href="03-dark-theme.html">Dark storefront</a>
+    <span class="what">Light-tuned defaults on a dark page, shown beside a themed twin. Tests the limits of
+    “crafted defaults” from ADR 0002.</span></li>
+  <li><a href="04-no-anchor.html">No anchor, bad selectors, duplicate claims</a>
+    <span class="what">Missing anchor, invalid selector, two toasts, two ratings, unknown placement.
+    Tests the fallback rule in ADR 0003.</span></li>
+  <li><a href="05-narrow-rtl.html">320px column, RTL document</a>
+    <span class="what">Narrowest realistic column with <code>dir="rtl"</code>.</span></li>
+  <li><a href="06-csp.html">Strict CSP</a>
+    <span class="what"><code>style-src 'self'</code>, no <code>'unsafe-inline'</code>. Blocks inline
+    &lt;style&gt; and <code>style=""</code> attributes alike.</span></li>
+  <li><a href="07-broken-payload.html">Broken payloads</a>
+    <span class="what">404, invalid JSON, wrong shape, array of rubbish, missing mount.</span></li>
+</ol>
+</div></body></html>

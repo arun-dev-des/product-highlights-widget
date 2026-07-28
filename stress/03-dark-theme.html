@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stress 03 — dark storefront</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  body { font: 16px "Helvetica Neue", Arial, sans-serif; background: #101013; color: #f2f2f4; margin: 0; }
+  .page { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  .gallery { background: #1c1c22; height: 120px; border-radius: 10px; }
+  .card { border: 1px solid #2a2a33; border-radius: 10px; padding: 16px; margin: 16px 0; }
+  .btn { width: 100%; padding: 14px; background: #f2f2f4; color: #101013; border: 0; border-radius: 8px; }
+</style></head>
+<body>
+<p class="st-note"><b>03 · Dark storefront.</b> Light-tuned defaults on a dark page.
+  <b>PASS:</b> everything is legible. <b>Expected FAIL:</b> the list is dark ink on a dark page —
+  this is the case ADR 0002 says merchants must theme, and the honest test of whether "crafted defaults"
+  are enough on their own. The themed twin below shows the fix: nine custom properties.</p>
+<div class="page">
+  <div class="gallery">product image</div>
+  <div class="card"><button class="btn">Add to cart</button></div>
+  <h3 style="font-size:13px;opacity:.6;text-transform:uppercase;letter-spacing:.08em">Unthemed</h3>
+  <div id="widget-slot"></div>
+  <h3 style="font-size:13px;opacity:.6;text-transform:uppercase;letter-spacing:.08em;margin-top:32px">Themed</h3>
+  <div id="themed" style="
+    --hl-ink:#f2f2f4; --hl-ink-muted:#a5a5b0; --hl-border:#2a2a33;
+    --hl-surface:transparent; --hl-surface-raised:#1c1c22; --hl-shimmer:#ffcd6b;
+    --hl-font:'Helvetica Neue',Arial,sans-serif; --hl-radius:10px;"></div>
+</div>
+<script src="../react/dist/product-highlights.react.js"></script>
+<script>
+  ProductHighlights.mount('#widget-slot', { url: '../design-starter/sample-content.json' });
+  fetch('../design-starter/sample-content.json').then(r => r.json()).then(c => {
+    ProductHighlights.mount('#themed', { content: c, toast: false, badges: false });
+  });
+</script>
+</body></html>

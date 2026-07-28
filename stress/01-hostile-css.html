@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stress 01 — hostile CSS</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  /* A merchant theme written with no restraint whatsoever. Every rule here is
+     something real storefronts do. */
+  *, *::before, *::after { box-sizing: border-box !important; margin: 0; padding: 0; }
+  div  { margin: 6px !important; line-height: 3 !important; }
+  p    { color: hotpink !important; font-size: 28px !important; text-transform: uppercase !important; }
+  span { display: block !important; border: 2px dashed red !important; }
+  ul, li { list-style: square inside !important; padding-left: 30px !important; }
+  svg  { width: 90px !important; height: 90px !important; opacity: .2 !important; }
+  button { all: unset !important; }
+  /* The generic names the brief warns about, at high specificity. */
+  .card, .title, .btn, .container, .item, .text, .body, .icon, .list, .rating, .pill, .frame {
+    background: repeating-linear-gradient(45deg,#ff0,#ff0 8px,#f0f 8px,#f0f 16px) !important;
+    color: #00f !important; font-family: "Comic Sans MS", cursive !important;
+    border: 4px solid lime !important; border-radius: 40px !important; letter-spacing: 4px !important;
+  }
+  body { font: 16px Georgia, serif; background: #fdfcf9; color: #2b2b2b; }
+  .page { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  .gallery { background: #ece7dd; height: 120px; }
+</style></head>
+<body>
+<p class="st-note" style="color:#e8e4dc!important;font-size:13px!important;text-transform:none!important">
+  <b>01 · Hostile CSS.</b> Host page sets <code>!important</code> on every generic class the widget uses,
+  plus element selectors on <code>div/p/span/svg/ul</code>. <b>PASS:</b> widget looks exactly as it does on
+  the normal page — no pink, no lime, no Comic Sans, no 90px icons.
+</p>
+<div class="page">
+  <div class="container">
+    <h1 class="title">Aster Merino Crew Knit</h1>
+    <p class="price">$148.00</p>
+    <div class="gallery">product image</div>
+    <div class="card"><button class="btn">Add to cart</button></div>
+    <div id="widget-slot"></div>
+  </div>
+</div>
+<script src="../react/dist/product-highlights.react.js"
+        data-mount="#widget-slot"
+        data-content="../design-starter/sample-content.json"></script>
+</body></html>

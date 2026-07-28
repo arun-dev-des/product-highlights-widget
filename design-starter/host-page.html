@@ -151,9 +151,23 @@
     </div>
   </main>
 
+  <!-- ?v busts the browser's module cache when the widget changes during
+       development — bump it alongside edits. It must match the version in
+       theme-panel.js's import exactly: a module's identity is its resolved
+       URL, and two different URLs would be two instances, each auto-mounting. -->
   <script type="module"
-          src="../widget/product-highlights.js"
+          src="../widget/product-highlights.js?v=8"
           data-mount="#widget-slot"
-          data-content="./sample-content.json"></script>
+          data-content="./sample-content.json?v=8"></script>
+
+  <!-- ================================================================= -->
+  <!-- Theme panel. A merchant-facing configurator for the nine tokens    -->
+  <!-- in ADR 0002's contract, with the WCAG AA gate that ADR specifies.  -->
+  <!--                                                                    -->
+  <!-- Not part of the widget: it adds nothing to product-highlights.js,   -->
+  <!-- which is unchanged and unaware of it. Delete this one tag to ship   -->
+  <!-- the page without it.                                                -->
+  <!-- ================================================================= -->
+  <script type="module" src="./theme-panel.js"></script>
 </body>
 </html>

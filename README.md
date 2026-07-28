@@ -8,7 +8,7 @@ widget renders it there: an inline list beside the buy action, a rating panel, a
 badge on the product image, a persistent toast. Six layouts if a merchant wants
 them somewhere else entirely.
 
-**20.3 KB gzipped. No dependencies, no build step, everything inside shadow roots.**
+**20.4 KB gzipped. No dependencies, no build step, everything inside shadow roots.**
 
 [**Product page**](https://product-highlights-widget.vercel.app/design-starter/host-page.html) ·
 [Dev harness](https://product-highlights-widget.vercel.app/dev/harness.html)
@@ -21,6 +21,7 @@ them somewhere else entirely.
 |---|---|
 | [`widget/product-highlights.js`](widget/product-highlights.js) | **The widget.** One vanilla ES module. This is the submission |
 | [`design-starter/host-page.html`](design-starter/host-page.html) | The mock storefront. A theme panel on the right edge configures tokens and switches layout live |
+| [`design-starter/theme-panel.js`](design-starter/theme-panel.js) | **A merchant tool, not part of the widget.** It writes the token block live and grades every colour pair against WCAG AA. Its own 12.4 KB is not in the 20.4 KB above, and deleting its script tag removes it entirely |
 | [`dev/harness.html`](dev/harness.html) | Twelve cases — every layout, content shape and failure mode, each stating what should be true |
 | [`stress/`](stress/) | Seven host pages built to break it. Findings, including the unflattering ones, in [stress/README.md](stress/README.md) |
 | [`react/`](react/) | The same widget on React 19 — a measurement, not the deliverable. [react/README.md](react/README.md) |
@@ -159,7 +160,87 @@ where a value exists before it is used.
 
 ---
 
-## Decisions
+## Design decisions
+
+**The highlights go where the question is asked.**
+
+A shopper on a product page is not reading a feature list. They are working
+through a small set of hesitations, and each one has a place on the page where
+it naturally comes up. Delivery, guarantee and fit are answers to *should I buy
+this*, so they sit with the buy action. Traceable merino is a claim about the
+thing itself, so it sits on the product image. Social proof is the one item that
+earns an interruption, so it takes a persistent pill the shopper can leave up or
+dismiss.
+
+Five equivalent rows under the button would have asserted that all five are the
+same kind of fact. They are not — and the column ran past the image, which is
+the point at which the page stops reading as one composition.
+
+**Nothing takes the pace out of the shopper's hands.**
+
+- The list is static. Everything is readable in one pass, with no control to
+  operate and nothing to wait for.
+- The toast is permanent and never dismisses on a timer. It holds the current
+  line while a pointer is over it or focus is inside it, and each line's dwell is
+  set by its own length rather than a fixed interval, so a long sentence is not
+  swapped out before it can be read.
+- `steps`, the only self-advancing layout, hands the list over permanently on the
+  first click or key press. A shopper who touches it is not fighting the
+  animation for control afterwards.
+- Motion serves orientation, not decoration: rows rise once, on entry, when the
+  widget comes into view. Reduced motion removes the movement, not the content —
+  everything still appears, it simply arrives rather than rises.
+
+**The semantics are structural, not applied afterwards.** The list is a real
+`<ul>` with an accessible name, so its length is announced before it is read
+through. Accordion rows are `<button>`s carrying `aria-expanded` and
+`aria-controls`. The score is a single `role="img"` labelled *Rated 4.8 out of
+5*, with the numeral and stars marked decorative so it is not read three times.
+The toast keeps every line in the DOM at once and read in order, because the
+rotation is a visual treatment rather than a change of content. `all: initial`
+takes the UA focus ring with it, so it is put back explicitly.
+
+## Technical decisions
+
+**Stack — a vanilla ES module. No dependencies, no build step.** This runs on
+other people's pages, so the unit that matters is not download but main-thread
+time before the *merchant's* first paint, against Core Web Vitals that are
+theirs and not ours. I built the same widget on React 19 and Motion to price the
+alternative rather than assert it: **112.6 kB gzipped against 20.4 kB**, of which
+~98 kB is fixed framework overhead that buys a shopper nothing. The framework
+bought real things — drag-to-dismiss, one clock driving both the rotation and its
+indicator, ~80 lines of measurement code deleted — and none of them are worth
+98 kB on a stranger's product page. The measurement, including where it flatters
+the vanilla build, is in [react/README.md](react/README.md).
+
+**Isolation — a shadow root per surface, `all: initial` on each `:host`.** The
+mock page's class names are exactly the collision the brief points at: `.card`,
+`.title`, `.details`. Prefixing only avoids the collisions I remember to prefix,
+and does nothing at all about the host's own `p` and `ul` rules reaching my
+elements. Shadow DOM makes the guarantee structural and bidirectional — nothing
+of the host's reaches in, nothing of mine leaks out. The cost is accepted rather
+than waved away: no global stylesheet and no `:root` tokens, which is why there
+is no Tailwind here. [ADR 0001 →](docs/decisions/0001-style-isolation.md)
+
+**Light — one file, 20.4 kB gzipped, no dependencies to audit and nothing to
+build at deploy time.** The entrance is gated behind an IntersectionObserver, so
+nothing animates until the widget is on screen, and the toast's rotation stops
+outright while the tab is in the background.
+
+**Fails safe — the page is never worse for the widget being on it.** `mount()`
+never throws; it warns and resolves `null`. The payload passes through one
+normaliser that drops what it does not recognise rather than repairing it, so
+nothing downstream re-validates. Anything that cannot be placed falls back to the
+list, so the payload renders in full however wrong the configuration. Nothing
+renderable means nothing rendered — no empty box, no reserved space. And every
+effect that hides text carries a backstop: a 1600 ms timer behind the entrance
+observer, a timer as well as `animationend` behind the shimmer, and a
+`CSS.supports` check before the sweep is applied at all. Text hidden pending an
+animation must never depend on that animation arriving. Seven
+[stress pages](stress/) and twelve [harness cases](dev/harness.html) exist to
+hold that claim to account.
+
+## The records
 
 The three load-bearing choices are argued in full in their own records — the
 context, the alternatives rejected, and the consequences accepted:

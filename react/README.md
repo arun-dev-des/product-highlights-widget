@@ -71,7 +71,7 @@ Measured, gzip level 9, on the actual build output:
 | motion | +122.4 kB | **+38.8 kB** | 35% |
 | the widget itself | +40.0 kB | **+14.1 kB** | 13% |
 | **total** | **354.3 kB** | **112.6 kB** | |
-| vanilla build, for comparison | 63.4 kB | **20.3 kB** | |
+| vanilla build, for comparison | 63.8 kB | **20.4 kB** | |
 
 That is **5.5× the vanilla build**, and the honest reading of the table is that
 none of the increase is the widget. My own code compresses to 14.1 kB here — for

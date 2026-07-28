@@ -9,9 +9,17 @@
 > **Implementation status.** Of the four cascade layers, the widget ships layer 2
 > (CSS custom properties) and layer 4 (crafted defaults). Layer 1 (a `theme`
 > block in the content payload) and layer 3 (bounded inference) are not built.
-> The contrast gate below is consequently unimplemented: theming currently flows
-> through custom properties, which the browser applies directly, leaving nothing
-> to intercept. It becomes necessary the moment layer 1 is accepted.
+>
+> The contrast gate in §3 **is** implemented, but not inside the widget — it
+> could not be. Custom properties are applied by the browser directly, so at
+> layer 2 there is nothing to intercept. It lives instead in the theme panel that
+> ships with the mock host page
+> ([`design-starter/theme-panel.js`](../../design-starter/theme-panel.js)), which
+> is the first point in the cascade where a value exists before it is used. That
+> panel reports a failing pair rather than silently substituting the default, on
+> the reasoning that discarding what somebody just typed reads as a broken
+> control; the substitution described in §3 belongs at the payload boundary,
+> where nobody is watching. It becomes necessary the moment layer 1 is accepted.
 
 ---
 
@@ -121,20 +129,39 @@ help. The default pair — `#2b2b2b` on `#fdfcf9` — clears AA at roughly 13.8:
 The theming surface is a small, closed set. Nine tokens, all optional:
 
 ```css
---hl-surface        /* primary background      */
---hl-surface-muted  /* secondary fill          */
---hl-ink            /* primary text            */
---hl-ink-muted      /* secondary text          */
---hl-border         /* hairlines               */
---hl-accent         /* interactive / active    */
---hl-radius         /* corner radius           */
---hl-font           /* type family             */
---hl-space          /* base spacing unit       */
+--hl-surface        /* list background, transparent by default */
+--hl-surface-raised /* toast and badge — surfaces that float   */
+--hl-ink            /* primary text                            */
+--hl-ink-muted      /* secondary text                          */
+--hl-border         /* hairlines                               */
+--hl-shimmer        /* peak colour of the toast sweep          */
+--hl-radius         /* corner radius                           */
+--hl-font           /* type family                             */
+--hl-space          /* base spacing unit                       */
 ```
 
 Deliberately small. A narrow token set is a contract that can be supported and
 reasoned about; an open one becomes an unbounded support burden and quietly turns
 every internal styling decision into public API.
+
+**Where they are set matters, and is not obvious.** The widget's surfaces attach
+in three different places — the list to the merchant's mount element, the toast
+to `document.body`, the badge inside the merchant's anchor — so tokens set on the
+mount reach the list and rating panel alone. Hoisting them to a shared ancestor
+such as `:root` fails for a second, independent reason: the widget *declares*
+these defaults inside `:host`, and a declared value always beats an inherited
+one. Only a rule matching the host elements themselves outranks it, which is why
+the toast and badge tag themselves with `data-product-highlights`:
+
+```css
+#highlights,
+[data-product-highlights] { --hl-ink: #f2f2f4; }
+```
+
+The React build extends this set with `--hl-accent` and four further tokens for
+surfaces the vanilla build does not have (icon wells, a dwell indicator, a focus
+ring). The nine above are the shared contract; the extras are documented in
+[`react/README.md`](../../react/README.md).
 
 ---
 

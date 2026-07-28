@@ -197,6 +197,36 @@ evaluate, and is the literal shape the brief warns against.
 
 ## Notes
 
+- **Layout is the escape hatch, and it is built out of the fallback rule.** A
+  merchant who does not want distributed placement at all sets `layout` to
+  `list`, `compact` or `simple`, and every item renders in one surface. This
+  needed no second resolver: a single-surface layout suppresses the other
+  surfaces, and the rule above returns their items to the list. The presentation
+  a reviewer sees as "the alternative design" is the same code path as a
+  misconfigured anchor.
+
+  `simple` renders titles without bodies, which is why it is offered and not
+  defaulted to — it is honest for payloads whose titles stand alone and dishonest
+  for this one, where *"True to size"* needs *"runs slightly long in the sleeve"*
+  to be useful. `compact` keeps the body for that reason. All four are exercised
+  in `dev/harness.html`.
+
+  `accordion` and `steps` are the two layouts that change markup rather than only
+  CSS, because a disclosure must be a real button to be operable. They are also
+  the only ones that reintroduce the interaction surface the default deliberately
+  avoids — offered for payloads too long to sit open, never assumed. A row with
+  no body renders as a plain row rather than a control that reveals nothing.
+
+  `steps` additionally asserts an order by advancing through the rows on its
+  own. That is honest for an ordered payload and dishonest for this one, which
+  is the whole reason it is a layout rather than the design. It cycles
+  continuously — the toast's standing-rotation reasoning, applied inside the
+  column — and keeps the toast's civilities in exchange: it holds on hover and
+  focus, resumes on the remainder of a dwell rather than a fresh one, pauses
+  entirely while the tab is hidden, stops permanently at the first click, and
+  does not play at all under `prefers-reduced-motion` — where, unlike the toast,
+  nothing is put out of reach by staying still.
+
 - `type` remains unused by the renderer. It is preserved in the payload for
   merchant-side categorisation and reporting, and deliberately has no effect on
   presentation — see alternative B.

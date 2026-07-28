@@ -103,9 +103,27 @@ and `:root` loses to the widget's own `:host` declarations.
 }
 ```
 
-The demo page ships a **theme panel** that writes exactly this block live and
-grades every colour pair against WCAG AA. It is a merchant tool, not part of the
-widget — one script tag, deleted to remove it, and zero bytes in the bundle.
+### The theme panel
+
+A configurator that writes exactly the block above, live, and grades every colour
+pair against WCAG AA as you go. Add it with one tag — it needs no attributes if
+your mount is `#widget-slot`:
+
+```html
+<script type="module" src="/design-starter/theme-panel.js"
+        data-panel-mount="#highlights"
+        data-panel-content="/highlights.json"></script>
+```
+
+It is a merchant tool, **not part of the widget**: zero bytes in the bundle, and
+deleting the tag removes it. The widget has no idea it exists — the panel only
+sets the public custom properties, the same channel a stylesheet would use.
+Keep it beside `widget/`, since it imports the module by relative path.
+
+It is also where ADR 0002's contrast gate lives, because it is the only place it
+*can*: custom properties are applied by the browser directly, so at that layer
+there is nothing to intercept. A configurator is the first point in the cascade
+where a value exists before it is used.
 [ADR 0002 →](docs/decisions/0002-theming-and-native-feel.md)
 
 ---

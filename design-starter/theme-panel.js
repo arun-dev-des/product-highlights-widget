@@ -35,8 +35,23 @@
  */
 
 /* The ?v must match the host page's script tag exactly — a module's identity is
-   its resolved URL, and a mismatch would load the widget twice. */
+   its resolved URL, and a mismatch would load the widget twice. The path is
+   resolved against this file, not the page including it, so the panel can be
+   dropped into any page as long as it stays beside the widget directory. */
 import { mount, _reset } from '../widget/product-highlights.js?v=8';
+
+/* -------------------------------------------------------------------------
+ * Where to point
+ *
+ * `document.currentScript` is null inside a module, so the panel finds its own
+ * tag by an attribute of its own — deliberately not the widget's `data-mount`
+ * and `data-content`, which would make the widget's auto-mount pick up the
+ * wrong tag. Both fall back to the demo page's values, so that page needs no
+ * attributes at all.
+ * ---------------------------------------------------------------------- */
+const tag = document.querySelector('script[data-panel-mount], script[data-panel-content]');
+const MOUNT = (tag && tag.dataset.panelMount) || '#widget-slot';
+const CONTENT = (tag && tag.dataset.panelContent) || './sample-content.json';
 
 /* -------------------------------------------------------------------------
  * The token contract
@@ -197,9 +212,10 @@ let layout = 'distributed';
  *  the payload, and inventing a unique URL per view would defeat that. */
 function remountWidget() {
   _reset();
-  const slot = document.querySelector('#widget-slot');
+  const slot = document.querySelector(MOUNT);
   slot?.shadowRoot?.replaceChildren();
-  return mount('#widget-slot', { url: `./sample-content.json?v=${Date.now()}`, layout });
+  const bust = `${CONTENT.includes('?') ? '&' : '?'}v=${Date.now()}`;
+  return mount(MOUNT, { url: CONTENT + bust, layout });
 }
 
 const isDefault = (f) => (f.transparent ? state.get(f.key) === null : state.get(f.key) === f.def);
@@ -220,7 +236,7 @@ function cssValue(f) {
  * but see the note at the top of this file — the widget declares its defaults
  * on `:host`, so only a rule matching the host element itself can outrank them.
  */
-const TARGETS = '#widget-slot, [data-product-highlights]';
+const TARGETS = `${MOUNT}, [data-product-highlights]`;
 
 /**
  * Apply the current state to every surface.
@@ -755,8 +771,8 @@ function build() {
       blocks.push(
         '<!-- Layout is a mount option, not a token. -->\n' +
         '<script type="module" src="/widget/product-highlights.js"\n' +
-        '        data-mount="#highlights"\n' +
-        '        data-content="/highlights.json"\n' +
+        `        data-mount="${MOUNT}"\n` +
+        `        data-content="${CONTENT}"\n` +
         `        data-layout="${layout}"><\/script>`,
       );
     }
@@ -768,7 +784,7 @@ function build() {
         '   document.body and to the anchor element, so neither\n' +
         '   inherits from the mount. An ancestor rule such as :root\n' +
         "   would lose to the widget's own :host defaults. */\n" +
-        '#widget-slot,\n[data-product-highlights] {\n' +
+        `${MOUNT},\n[data-product-highlights] {\n` +
         changed.map((f) => `  ${f.key}: ${cssValue(f)};`).join('\n') +
         '\n}',
       );

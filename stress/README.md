@@ -45,19 +45,38 @@ token contract. Worth stating rather than discovering.
 numbers/empties, and a mount selector matching nothing: every one renders
 nothing at all and leaves the page intact. No exception escapes.
 
-### Reveal does not hold — React build (02, 04, 07)
+### Reveal is flaky under headless — unresolved (02)
 
-**The list items are in the DOM, laid out, `visibility: visible`, and stuck at
-`opacity: 0` with `getAnimations().length === 0`.** The enter animation was never
-started, so nothing will ever bring them back.
+On some runs the React list renders with its items stuck at `opacity: 0`. The
+elements are in the DOM, laid out and `visibility: visible`; the reveal state
+itself is correct — instrumenting `useRevealed` showed the 1600ms backstop
+firing and React re-rendering with `revealed === true` — but motion's variant
+animation never runs, so the rows never fade in.
 
-Reproduced with a single `ProductHighlights.mount()` call on an otherwise empty
-page — no hostile CSS required. The vanilla build renders correctly on the same
-markup, because it reveals content on a **1600ms timer backstop** that does not
-depend on an IntersectionObserver ever reporting.
+**This has not been reproduced reliably and should not be treated as a
+confirmed defect.** Attempts to isolate a trigger all failed:
 
-This is the same failure the vanilla build was hardened against earlier and the
-port did not carry across: *content hidden pending an animation must never
-depend on that animation arriving.* Real-world equivalents are background tabs,
-`content-visibility: auto` subtrees, and mounts inside a container that is
-collapsed at mount time and expands later.
+| Hypothesis | Result |
+|---|---|
+| The transformed/contained ancestor chain | Ruled out — fails on a plain page too |
+| Explicit `mount()` vs script-tag auto-mount | Ruled out — both render on some pages |
+| Inline `content` vs fetched `url` | Ruled out — both directions render and fail |
+| Payload size or the presence of toast/badge items | Ruled out — no consistent split |
+| Multiple `mount()` calls on one page | Ruled out — a single call also fails |
+
+The real host pages — `design-starter/host-page-react.html` and stress page 01 —
+render completely and correctly, badge, list and toast alike. The most likely
+explanation is frame-timing sensitivity in headless Chrome rather than a defect
+in the widget: motion drives its animations from its own rAF loop, and a
+JS-driven loop is more exposed to a virtualised clock than a CSS transition is.
+
+What is worth noting, without overstating it: **under identical headless
+conditions the vanilla build rendered every time and the React build did not.**
+Vanilla reveals through a CSS class toggle backed by a timer, so once the class
+flips the browser paints the final state whether or not any frame callback ran.
+Motion cannot fall back that way. That is a real difference in robustness, not a
+bug report.
+
+**Verify in a real browser before drawing any conclusion.** Open
+`stress/02-transformed-ancestor.html` and watch whether the rows appear. That is
+the one check this suite cannot make for itself.

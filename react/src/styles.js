@@ -464,7 +464,20 @@ ${COMMON}
 
 @media (forced-colors: active) {
   .pill { border-color: CanvasText; }
-  .dwell { background: CanvasText; opacity: 1; }
+  /* Two elements, so both need addressing. Styling only the track — which is what
+     this rule did while the bar was a single element — painted the track
+     CanvasText and left the fill to resolve to Canvas, so the indicator read
+     exactly backwards: full when empty.
+
+     The track goes to Canvas rather than to a third system colour. GrayText was
+     the obvious candidate and is wrong twice: its meaning is "disabled text", and
+     it resolves to dark red or bright green depending on the forced palette,
+     which is far louder than a 3px rule should be on a page whose colours we no
+     longer control. An invisible track and a growing CanvasText fill still convey
+     progress; only the unfilled extent is lost, which is the cheaper thing to
+     give up. */
+  .dwell { background: Canvas; }
+  .dwell-fill { background: CanvasText; opacity: 1; }
   .frame.shimmer {
     background-image: none;
     color: CanvasText;

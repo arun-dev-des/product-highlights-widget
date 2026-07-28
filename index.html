@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Highlights — an embeddable widget</title>
+  <meta name="description" content="An embeddable widget that surfaces key product facts across a merchant's product page. One script, one payload, six layouts." />
+  <style>
+    /* The index is the front door, so it borrows the demo storefront's own
+       design language rather than introducing a third one: Georgia, the warm
+       hairline, the 4px radius, hierarchy in size and colour over weight. */
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Georgia, 'Times New Roman', serif;
+      color: #2b2b2b;
+      background: #fdfcf9;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { max-width: 640px; margin: 0 auto; padding: 96px 24px 120px; }
+
+    .brand {
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8a8175;
+      margin: 0 0 40px;
+    }
+
+    h1 { font-size: 34px; line-height: 1.2; margin: 0 0 16px; letter-spacing: -0.01em; }
+
+    .lede { font-size: 17px; color: #6f675b; margin: 0 0 8px; text-wrap: pretty; }
+    .meta { font-size: 14.5px; color: #8a8175; margin: 0; }
+
+    h2 {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #a09a8e;
+      font-weight: normal;
+      margin: 56px 0 0;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e4ddcf;
+    }
+
+    ul { list-style: none; margin: 0; padding: 0; }
+
+    li { border-bottom: 1px solid #e4ddcf; }
+
+    a.row {
+      display: block;
+      padding: 18px 0;
+      text-decoration: none;
+      color: inherit;
+    }
+    a.row:hover .name { color: #8a5a1f; }
+    a.row:focus-visible { outline: 2px solid #8a5a1f; outline-offset: 3px; }
+
+    .name { font-size: 17px; display: block; transition: color 160ms ease; }
+    .name::after { content: ' →'; color: #b3a894; }
+    .what { display: block; font-size: 14.5px; color: #6f675b; margin-top: 2px; text-wrap: pretty; }
+
+    .foot { margin-top: 56px; font-size: 14px; color: #8a8175; }
+    .foot a { color: #6f675b; }
+
+    @media (max-width: 560px) {
+      .wrap { padding: 56px 20px 80px; }
+      h1 { font-size: 27px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="brand">Design engineering</p>
+
+    <h1>Product Highlights</h1>
+    <p class="lede">
+      An embeddable widget that surfaces key product facts — delivery, guarantee,
+      social proof, material, fit — across a merchant's product page.
+    </p>
+    <p class="meta">
+      One script, one payload, four placements and six layouts. No dependencies,
+      no build step, everything inside shadow roots.
+    </p>
+
+    <h2>Demos</h2>
+    <ul>
+      <li>
+        <a class="row" href="./design-starter/host-page.html">
+          <span class="name">Product page</span>
+          <span class="what">The mock storefront with the widget mounted. A theme
+            panel on the right edge configures the tokens and switches layout live.</span>
+        </a>
+      </li>
+      <li>
+        <a class="row" href="./dev/harness.html">
+          <span class="name">Dev harness</span>
+          <span class="what">Every layout, plus the degradation states — ragged
+            content, an empty array, a malformed payload.</span>
+        </a>
+      </li>
+      <li>
+        <a class="row" href="./stress/">
+          <span class="name">Stress suite</span>
+          <span class="what">Seven host pages built to break it: hostile CSS,
+            transformed ancestors, a dark theme, a strict CSP, broken payloads.</span>
+        </a>
+      </li>
+      <li>
+        <a class="row" href="./design-starter/host-page-react.html">
+          <span class="name">React variant</span>
+          <span class="what">The same widget rebuilt on React 19 and Motion 12, so
+            the stack decision rests on a measurement rather than an assertion.</span>
+        </a>
+      </li>
+    </ul>
+
+    <p class="foot">
+      Reasoning, trade-offs and the architecture decision records are in the
+      <a href="https://github.com/arun-dev-des/product-highlights-widget">repository</a>.
+    </p>
+  </main>
+</body>
+</html>

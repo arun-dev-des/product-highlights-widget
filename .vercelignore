@@ -1,0 +1,10 @@
+# The React build's dependencies are only needed to produce dist/, which is
+# committed. Nothing at deploy time compiles anything.
+react/node_modules
+
+# Kept locally, not part of the deployed site.
+*.zip
+*.mp4
+*.mov
+design-engineer-takehome-assignment-brief.md
+.DS_Store

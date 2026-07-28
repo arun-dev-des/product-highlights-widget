@@ -39,10 +39,11 @@ the same story.
 ## Embedding it
 
 ```html
-<div id="highlights"></div>
+<div id="widget-slot"></div>
 
 <script type="module" src="/widget/product-highlights.js"
-        data-mount="#highlights" data-content="/highlights.json"></script>
+        data-mount="#widget-slot"
+        data-content="/design-starter/sample-content.json"></script>
 ```
 
 Or drive it directly — `mount()` resolves to the host element, or `null` if
@@ -50,16 +51,37 @@ nothing rendered. It never throws.
 
 ```js
 import { mount } from '/widget/product-highlights.js';
-await mount('#highlights', { content, layout: 'compact', label: 'Why shop with us' });
+
+await mount('#widget-slot', {
+  url: '/design-starter/sample-content.json',
+  layout: 'compact',
+  label: 'Why shop with us',
+});
 ```
 
 ### Content
 
+The demo payload is [`design-starter/sample-content.json`](design-starter/sample-content.json) —
+the file the starter shipped, extended with the optional fields below. Three of
+its five items, as they actually appear:
+
 ```json
-{ "highlights": [
-  { "title": "Free 2-day delivery", "body": "Order before 4pm…", "icon": "truck" },
-  { "title": "100% traceable merino", "icon": "leaf", "placement": "badge", "anchor": ".gallery" }
-]}
+{
+  "productName": "Aster Merino Crew Knit",
+  "highlights": [
+    { "type": "shipping", "title": "Free 2-day delivery",
+      "body": "Order before 4pm and it ships today. Free returns within 30 days.",
+      "icon": "truck", "placement": "list" },
+
+    { "type": "social_proof", "title": "Loved by 3,100+ buyers",
+      "body": "Rated 4.8 out of 5. 94% of reviewers say it kept its shape after washing.",
+      "icon": "star", "toastIcon": "avatars", "placement": "toast" },
+
+    { "type": "material", "title": "100% traceable merino",
+      "body": "Ethically sourced, mulesing-free wool. Naturally breathable and odour-resistant.",
+      "icon": "leaf", "placement": "badge", "anchor": ".gallery" }
+  ]
+}
 ```
 
 `title` is the only requirement. `placement` is `list` *(default)*, `rating`,
@@ -94,7 +116,7 @@ the widget's **own elements**, not on an ancestor — the toast attaches to
 and `:root` loses to the widget's own `:host` declarations.
 
 ```css
-#highlights, [data-product-highlights] {
+#widget-slot, [data-product-highlights] {
   --hl-ink: #2b2b2b;           --hl-ink-muted: #6f675b;   --hl-border: #e4ddcf;
   --hl-surface: transparent;   --hl-surface-raised: #fff; --hl-shimmer: #8a5a1f;
   --hl-font: Georgia, serif;   --hl-radius: 4px;          --hl-space: 4px;

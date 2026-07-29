@@ -786,6 +786,11 @@ function h(tag, props = {}, ...children) {
     if (k === 'text') el.textContent = v;
     else if (k === 'html') el.innerHTML = v; // only ever our own icon strings
     else if (k === 'class') el.className = v;
+    // Written through the CSSOM rather than as a style attribute. A storefront
+    // running `style-src 'self'` blocks the attribute — silently, and only in
+    // production — which would cost the list its stagger and the rating panel
+    // its star fill. CSP does not police the CSSOM, so this survives both.
+    else if (k === 'style') el.style.cssText = v;
     else el.setAttribute(k, v);
   }
   for (const c of children) if (c) el.appendChild(c);

@@ -6,6 +6,8 @@
          margin: 0; }
   .wrap { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
   h1 { font-size: 22px; margin: 0 0 6px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: #8a8a8a;
+       font-weight: 600; margin: 40px 0 6px; padding-top: 28px; border-top: 1px solid #e4ddcf; }
   .lede { color: #6b6b6b; margin: 0 0 28px; }
   ol { padding-left: 20px; }
   li { margin: 0 0 18px; }
@@ -37,5 +39,18 @@ breaks embedded code. Every page states its own pass condition.</p>
     &lt;style&gt; and <code>style=""</code> attributes alike.</span></li>
   <li><a href="07-broken-payload.html">Broken payloads</a>
     <span class="what">404, invalid JSON, wrong shape, array of rubbish, missing mount.</span></li>
+</ol>
+
+<h2>The comparison build</h2>
+<p class="lede">Pages 01–07 mount <code>widget/product-highlights.js</code>, the build that ships. These two
+re-run the first two hazards against the React implementation in <code>react/</code>, holding the host page
+constant so the build is the only variable.</p>
+<ol start="8">
+  <li><a href="08-react-hostile-css.html">React build, hostile CSS</a>
+    <span class="what">Page 01's stylesheet exactly. Isolation is a platform primitive, so this should be
+    indistinguishable — the point is to have checked rather than assumed.</span></li>
+  <li><a href="09-react-reveal.html">React build, transformed ancestor and reveal</a>
+    <span class="what">Page 02's ancestor chain. The reproduction page for the unresolved reveal finding:
+    rows in the DOM but stuck at <code>opacity: 0</code> under headless automation.</span></li>
 </ol>
 </div></body></html>

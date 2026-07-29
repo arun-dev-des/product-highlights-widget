@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stress 09 — React build, transformed ancestor and reveal</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  body { font: 16px Georgia, serif; background: #fdfcf9; color: #2b2b2b; margin: 0; }
+  /* Held constant with page 02. */
+  .fx        { transform: translateZ(0); }
+  .filtered  { filter: saturate(1.02); }
+  .perspect  { perspective: 1000px; }
+  .contained { contain: paint; }
+  .page { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  .gallery { background: #ece7dd; height: 120px; border-radius: 4px; }
+  .card { border: 1px solid #e4ddcf; border-radius: 4px; padding: 16px; margin: 16px 0; }
+  .btn { width: 100%; padding: 14px; background: #2b2b2b; color: #fff; border: 0; border-radius: 4px; }
+</style></head>
+<body>
+<p class="st-note"><b>09 · React build, transformed ancestor and reveal.</b> Page 02 with the comparison
+  build mounted. <b>PASS:</b> the toast is pinned to the <i>viewport</i> bottom, and — the reason this page
+  exists — every list row is <i>visible</i>.
+  <b>Watch for:</b> rows present in the DOM but stuck at <code>opacity: 0</code>. That is the unresolved
+  finding in <a href="README.md">README.md</a>: the reveal state resolves correctly and Motion's
+  animation never runs, so nothing fades in. It has never reproduced in a real browser, only under
+  headless automation, and this page is where to check it.</p>
+<div class="fx"><div class="filtered"><div class="perspect"><div class="contained">
+  <div class="page">
+    <div class="gallery">product image</div>
+    <div class="card"><button class="btn">Add to cart</button></div>
+    <div id="widget-slot"></div>
+    <div style="height:60vh"></div>
+  </div>
+</div></div></div></div>
+
+<!-- The vanilla build reveals by toggling a class backed by a timer, so the
+     browser paints the final state whether or not a frame callback ever runs.
+     Motion drives its own rAF loop and cannot fall back that way — which is the
+     difference this page is here to keep observable. -->
+<script src="../react/dist/product-highlights.react.js"
+        data-mount="#widget-slot"
+        data-content="../design-starter/sample-content.json"></script>
+
+<script type="module" src="../design-starter/theme-panel.js"></script>
+</body></html>

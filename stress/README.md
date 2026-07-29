@@ -5,8 +5,12 @@ the one provided."* These are pages **unlike** the one provided — each isolati
 a way real storefronts break embedded code. Open `index.html`; every page states
 its own pass condition inline.
 
-All seven load `widget/product-highlights.js` — the build that ships. A suite
+Pages 01–07 load `widget/product-highlights.js` — the build that ships. A suite
 that exercises anything else is measuring the wrong thing.
+
+Pages 08 and 09 re-run the first two hazards against the React build in
+`react/`, with the host page held constant so the build is the only variable.
+They are a comparison, not coverage.
 
 Run from the repository root:
 
@@ -24,6 +28,8 @@ open http://localhost:8080/stress/
 | 05 | 320px column, RTL | Narrowest realistic column with `dir="rtl"` |
 | 06 | Strict CSP | `style-src 'self'` — blocks inline `<style>` and `style=""` alike |
 | 07 | Broken payloads | 404, invalid JSON, wrong shape, array of rubbish, missing mount |
+| 08 | React build, hostile CSS | Page 01's stylesheet against the comparison build |
+| 09 | React build, reveal | Page 02's ancestor chain; reproduction page for the reveal finding below |
 
 ---
 
@@ -67,12 +73,11 @@ Worth stating plainly: this was invisible while page 06 loaded the React bundle
 rather than the widget that ships. Testing the deliverable is the whole point of
 the suite.
 
-### Reveal is flaky under headless — unresolved (React build only)
+### Reveal is flaky under headless — unresolved (09)
 
-**Not reproducible from this suite any more.** Every page here now loads the
-vanilla widget, so the reproduction path is
-[`design-starter/host-page-react.html`](../design-starter/host-page-react.html).
-Recorded because the difference in robustness it points at is real.
+Page 09 exists for this finding: page 02's ancestor chain with the React build
+mounted, so the vanilla and React results can be compared with nothing else
+changed.
 
 On some runs the React list renders with its items stuck at `opacity: 0`. The
 elements are in the DOM, laid out and `visibility: visible`; the reveal state
@@ -105,6 +110,7 @@ Motion cannot fall back that way. That is a real difference in robustness, not a
 bug report.
 
 **Verify in a real browser before drawing any conclusion.** Open
-[`design-starter/host-page-react.html`](../design-starter/host-page-react.html)
-and watch whether the rows appear. That is the one check this suite cannot make
-for itself.
+[`09-react-reveal.html`](09-react-reveal.html) and watch whether the rows
+appear, then [`02-transformed-ancestor.html`](02-transformed-ancestor.html) for
+the same page on the shipping build. That is the one check this suite cannot
+make for itself.

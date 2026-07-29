@@ -25,11 +25,11 @@
     --hl-surface:transparent; --hl-surface-raised:#1c1c22; --hl-shimmer:#ffcd6b;
     --hl-font:'Helvetica Neue',Arial,sans-serif; --hl-radius:10px;"></div>
 </div>
-<script src="../react/dist/product-highlights.react.js"></script>
-<script>
-  ProductHighlights.mount('#widget-slot', { url: '../design-starter/sample-content.json' });
+<script type="module">
+  import { mount } from '../widget/product-highlights.js';
+  mount('#widget-slot', { url: '../design-starter/sample-content.json' });
   fetch('../design-starter/sample-content.json').then(r => r.json()).then(c => {
-    ProductHighlights.mount('#themed', { content: c, toast: false, badges: false });
+    mount('#themed', { content: c, toast: false, badges: false });
   });
 </script>
 </body></html>

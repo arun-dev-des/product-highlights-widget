@@ -5,6 +5,9 @@ the one provided."* These are pages **unlike** the one provided — each isolati
 a way real storefronts break embedded code. Open `index.html`; every page states
 its own pass condition inline.
 
+All seven load `widget/product-highlights.js` — the build that ships. A suite
+that exercises anything else is measuring the wrong thing.
+
 Run from the repository root:
 
 ```bash
@@ -45,7 +48,31 @@ token contract. Worth stating rather than discovering.
 numbers/empties, and a mount selector matching nothing: every one renders
 nothing at all and leaves the page intact. No exception escapes.
 
-### Reveal is flaky under headless — unresolved (02)
+### Strict CSP blocked the stagger, and the suite is why we know (06)
+
+Under `style-src 'self'` the widget rendered and stayed styled — constructable
+stylesheets are not inline styles, exactly as the page predicted. But it logged
+three CSP violations, one per list row: `h()` wrote the stagger index through
+`setAttribute('style', '--i:0')`, and a style *attribute* is precisely what that
+directive blocks. The rating panel's star fill came through the same path, so on
+a strict-CSP storefront it would have filled to zero.
+
+The failure is quiet. Nothing throws, nothing looks broken locally, and the
+widget only loses its motion on the stores most likely to be running a policy
+that tight. Fixed by writing through the CSSOM — `el.style.cssText`, which CSP
+does not police — and page 06 now reports **zero violations with the stagger
+intact**.
+
+Worth stating plainly: this was invisible while page 06 loaded the React bundle
+rather than the widget that ships. Testing the deliverable is the whole point of
+the suite.
+
+### Reveal is flaky under headless — unresolved (React build only)
+
+**Not reproducible from this suite any more.** Every page here now loads the
+vanilla widget, so the reproduction path is
+[`design-starter/host-page-react.html`](../design-starter/host-page-react.html).
+Recorded because the difference in robustness it points at is real.
 
 On some runs the React list renders with its items stuck at `opacity: 0`. The
 elements are in the DOM, laid out and `visibility: visible`; the reveal state
@@ -64,8 +91,8 @@ confirmed defect.** Attempts to isolate a trigger all failed:
 | Payload size or the presence of toast/badge items | Ruled out — no consistent split |
 | Multiple `mount()` calls on one page | Ruled out — a single call also fails |
 
-The real host pages — `design-starter/host-page-react.html` and stress page 01 —
-render completely and correctly, badge, list and toast alike. The most likely
+The real host page — `design-starter/host-page-react.html` — renders completely
+and correctly, badge, list and toast alike. The most likely
 explanation is frame-timing sensitivity in headless Chrome rather than a defect
 in the widget: motion drives its animations from its own rAF loop, and a
 JS-driven loop is more exposed to a virtualised clock than a CSS transition is.
@@ -78,5 +105,6 @@ Motion cannot fall back that way. That is a real difference in robustness, not a
 bug report.
 
 **Verify in a real browser before drawing any conclusion.** Open
-`stress/02-transformed-ancestor.html` and watch whether the rows appear. That is
-the one check this suite cannot make for itself.
+[`design-starter/host-page-react.html`](../design-starter/host-page-react.html)
+and watch whether the rows appear. That is the one check this suite cannot make
+for itself.

@@ -20,9 +20,8 @@
   <h3>Mount selector matches nothing</h3><div class="slot" id="snone"></div>
   <p id="canary">If you can read this, the host page survived.</p>
 </div>
-<script src="../react/dist/product-highlights.react.js"></script>
-<script>
-  const M = ProductHighlights.mount;
+<script type="module">
+  import { mount as M } from '../widget/product-highlights.js';
   M('#s404',   { url: '../design-starter/does-not-exist.json' });
   M('#sbad',   { url: './malformed.json' });
   M('#sshape', { content: { notHighlights: 'nope' } });

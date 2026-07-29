@@ -15,9 +15,9 @@
   <div class="card">Add to cart</div>
   <div id="widget-slot"></div>
 </div>
-<script src="../react/dist/product-highlights.react.js"></script>
-<script>
-  ProductHighlights.mount('#widget-slot', { content: { highlights: [
+<script type="module">
+  import { mount } from '../widget/product-highlights.js';
+  mount('#widget-slot', { content: { highlights: [
     { title: 'Badge with no anchor element', body: 'Should become a list row.', icon: 'leaf',
       placement: 'badge', anchor: '.gallery' },
     { title: 'Badge with an invalid selector', body: 'Must be caught, not thrown.', icon: 'leaf',

@@ -25,6 +25,9 @@
     --hl-surface:transparent; --hl-surface-raised:#1c1c22; --hl-shimmer:#ffcd6b;
     --hl-font:'Helvetica Neue',Arial,sans-serif; --hl-radius:10px;"></div>
 </div>
+<!-- Two mounts, and the second needs `toast: false, badges: false` so the twins
+     differ by theme alone rather than by a second toast. The auto-mount tag
+     carries one mount and no options, so this page drives the API directly. -->
 <script type="module">
   import { mount } from '../widget/product-highlights.js';
   mount('#widget-slot', { url: '../design-starter/sample-content.json' });
@@ -32,4 +35,14 @@
     mount('#themed', { content: c, toast: false, badges: false });
   });
 </script>
+
+<!-- The panel is pointed explicitly because there is no widget tag here for it
+     to read. It targets the unthemed twin: this page argues that a dark
+     storefront must theme the widget, and the panel is the tool that does it —
+     open it and drive the top list to the values hard-coded on the bottom one.
+     It is also where ADR 0002's contrast gate lives, which is the whole subject
+     of this page. -->
+<script type="module" src="../design-starter/theme-panel.js"
+        data-panel-mount="#widget-slot"
+        data-panel-content="../design-starter/sample-content.json"></script>
 </body></html>

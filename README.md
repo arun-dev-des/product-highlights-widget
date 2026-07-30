@@ -25,7 +25,7 @@ them somewhere else entirely.
 | [`dev/harness.html`](dev/harness.html) | Twelve cases — every layout, content shape and failure mode, each stating what should be true |
 | [`stress/`](stress/) | Seven host pages built to break it. Findings, including the unflattering ones, in [stress/README.md](stress/README.md) |
 | [`react/`](react/) | The same widget on React 19 — a measurement, not the deliverable. [react/README.md](react/README.md) |
-| [`docs/design-decisions.md`](docs/design-decisions.md) | **The design record.** The UX and UI reasoning in full — the shopper model, the forms I rejected, type, motion, space, and what is still thin |
+| [`docs/design-decisions.md`](docs/design-decisions.md) | **The design record.** The UX and UI reasoning — banner blindness as the first risk, the references I worked from, the forms I rejected, theming, and the stress suite that checks it |
 | [`docs/decisions/`](docs/decisions/) | Five ADRs for the load-bearing choices |
 
 ## Running it
@@ -177,9 +177,9 @@ where a value exists before it is used.
 
 ## Design decisions
 
-*The short version. The full record — the shopper model, why a reel and a
-stories sequence were rejected, the type scale, the motion budget, and the places
-the design is still thin — is in
+*The short version. The full record — banner blindness as the largest risk, the
+product references I worked from, why a reel and a stories sequence were rejected,
+the theming contract, and the seven stress pages — is in
 [docs/design-decisions.md](docs/design-decisions.md).*
 
 **The highlights go where the question is asked.**

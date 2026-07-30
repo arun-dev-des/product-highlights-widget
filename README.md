@@ -25,8 +25,8 @@ them somewhere else entirely.
 | [`dev/harness.html`](dev/harness.html) | Twelve cases — every layout, content shape and failure mode, each stating what should be true |
 | [`stress/`](stress/) | Seven host pages built to break it. Findings, including the unflattering ones, in [stress/README.md](stress/README.md) |
 | [`react/`](react/) | The same widget on React 19 — a measurement, not the deliverable. [react/README.md](react/README.md) |
-| [`docs/design-decisions.md`](docs/design-decisions.md) | **The design record.** The UX and UI reasoning — banner blindness as the first risk, the references I worked from, the forms I rejected, theming, and the stress suite that checks it |
-| [`docs/decisions/`](docs/decisions/) | Five ADRs for the load-bearing choices |
+| [`docs/design-decisions/design-decisions.md`](docs/design-decisions/design-decisions.md) | **The design record.** The UX and UI reasoning — banner blindness as the first risk, the references I worked from, the forms I rejected, theming, and the stress suite that checks it |
+| [`docs/engineering-decisions/`](docs/engineering-decisions/) | Five ADRs for the load-bearing choices |
 
 ## Running it
 
@@ -106,7 +106,7 @@ however wrong the configuration.
 | `accordion` | Bodies behind a disclosure, one open at a time |
 | `steps` | The accordion, cycling its rows on its own |
 
-![The six layouts, each rendered from the same payload](docs/images/layouts.png)
+![The six layouts, each rendered from the same payload](docs/design-decisions/images/layouts.png)
 
 *The same five items through every layout, captured from
 [`dev/harness.html`](dev/harness.html). `distributed` shows its list surface here;
@@ -114,7 +114,7 @@ its badge and toast sit elsewhere on the page, as in the screenshot below.*
 
 The five single-surface layouts are not a second rendering path: they turn the
 other surfaces off and let the fallback rule above return their items to the
-list. [ADR 0003 →](docs/decisions/0003-declared-placement.md)
+list. [ADR 0003 →](docs/engineering-decisions/0003-declared-placement.md)
 
 ### Theming
 
@@ -133,7 +133,7 @@ and `:root` loses to the widget's own `:host` declarations.
 
 ### The theme panel
 
-![The theme configurator open on the mock storefront](docs/images/theme-configurator.png)
+![The theme configurator open on the mock storefront](docs/design-decisions/images/theme-configurator.png)
 
 *The panel open on [`design-starter/host-page.html`](design-starter/host-page.html).
 Behind it, the `distributed` layout in full: the badge on the product image, the
@@ -171,7 +171,7 @@ It is also where ADR 0002's contrast gate lives, because it is the only place it
 *can*: custom properties are applied by the browser directly, so at that layer
 there is nothing to intercept. A configurator is the first point in the cascade
 where a value exists before it is used.
-[ADR 0002 →](docs/decisions/0002-theming-and-native-feel.md)
+[ADR 0002 →](docs/engineering-decisions/0002-theming-and-native-feel.md)
 
 ---
 
@@ -180,7 +180,7 @@ where a value exists before it is used.
 *The short version. The full record — banner blindness as the largest risk, the
 product references I worked from, why a reel and a stories sequence were rejected,
 the theming contract, and the seven stress pages — is in
-[docs/design-decisions.md](docs/design-decisions.md).*
+[docs/design-decisions/design-decisions.md](docs/design-decisions/design-decisions.md).*
 
 **The highlights go where the question is asked.**
 
@@ -240,7 +240,7 @@ and does nothing at all about the host's own `p` and `ul` rules reaching my
 elements. Shadow DOM makes the guarantee structural and bidirectional — nothing
 of the host's reaches in, nothing of mine leaks out. The cost is accepted rather
 than waved away: no global stylesheet and no `:root` tokens, which is why there
-is no Tailwind here. [ADR 0001 →](docs/decisions/0001-style-isolation.md)
+is no Tailwind here. [ADR 0001 →](docs/engineering-decisions/0001-style-isolation.md)
 
 **Light — one file, 20.4 kB gzipped, no dependencies to audit and nothing to
 build at deploy time.** The entrance is gated behind an IntersectionObserver, so
@@ -265,23 +265,23 @@ hold that claim to account.
 The load-bearing choices are argued in full in their own records — the context,
 the alternatives rejected, and the consequences accepted:
 
-- [**ADR 0001 — Style isolation**](docs/decisions/0001-style-isolation.md)
+- [**ADR 0001 — Style isolation**](docs/engineering-decisions/0001-style-isolation.md)
   Why every surface renders in its own shadow root, and what class prefixing and
   an iframe would each have cost. The claim is tested, not assumed:
   [stress page 01](stress/01-hostile-css.html) throws `!important` and element
   selectors at every generic class the widget uses.
-- [**ADR 0002 — Theming and native feel**](docs/decisions/0002-theming-and-native-feel.md)
+- [**ADR 0002 — Theming and native feel**](docs/engineering-decisions/0002-theming-and-native-feel.md)
   The token contract, why the defaults are treated as the primary design work
   rather than as fallbacks, and why probing the host page for its palette was
   deliberately not built.
-- [**ADR 0003 — Declared placement**](docs/decisions/0003-declared-placement.md)
+- [**ADR 0003 — Declared placement**](docs/engineering-decisions/0003-declared-placement.md)
   Four placements, why placement is declared rather than derived from `type`,
   and the fallback rule that every layout is built out of.
-- [**ADR 0004 — Layout from the measure**](docs/decisions/0004-layout-from-the-measure.md)
+- [**ADR 0004 — Layout from the measure**](docs/engineering-decisions/0004-layout-from-the-measure.md)
   Why the columns break where they do. The payload's titles run 12–24 characters
   and its bodies 65–80, and every track minimum, wrapping rule and withheld body
   is keyed to those numbers rather than to a grid chosen first.
-- [**ADR 0005 — Banner blindness and the visual seam**](docs/decisions/0005-banner-blindness.md)
+- [**ADR 0005 — Banner blindness and the visual seam**](docs/engineering-decisions/0005-banner-blindness.md)
   The biggest UX risk in injecting anything into someone else's store: shoppers
   filter what looks inserted before they read it. Why that makes theming an
   attention problem rather than a cosmetic one, why the crafted defaults are the

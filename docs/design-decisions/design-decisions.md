@@ -2,7 +2,7 @@
 
 A UX and UI record: the reasoning behind the experience, from the shopper's state
 of mind down to the pixel values. Written from the design side — the engineering
-counterparts are the [five ADRs](decisions/), and where a decision has both faces I
+counterparts are the [five ADRs](../engineering-decisions/), and where a decision has both faces I
 point at the record rather than repeat it.
 
 The order here is the order the decisions actually happened in. Each one narrows the
@@ -155,7 +155,7 @@ any of the business value in section 1. A highlight that is never read cannot he
 anyone decide, and cannot convert.
 
 This is argued in full, with what it costs and what the code still gets wrong, in
-[ADR 0005 — Banner blindness and the visual seam](decisions/0005-banner-blindness.md).
+[ADR 0005 — Banner blindness and the visual seam](../engineering-decisions/0005-banner-blindness.md).
 
 
 ## 3. What I looked at first
@@ -245,11 +245,11 @@ The existing product category, and the most useful reference of the six because 
 shows both halves of the argument at once.
 
 **The configurator half** validates the approach in
-[`theme-panel.js`](../design-starter/theme-panel.js): style variants, alignment,
+[`theme-panel.js`](../../design-starter/theme-panel.js): style variants, alignment,
 size, a colour picker, and a live preview. Note the swatches — **`Store colors`
 offered alongside `Recommended Colors`.** Reading the merchant's own palette and
 offering it back is a shipping idea, not a speculative one, which is the ground
-[ADR 0005 §7](decisions/0005-banner-blindness.md) builds on.
+[ADR 0005 §7](../engineering-decisions/0005-banner-blindness.md) builds on.
 
 **The output half is a warning.** The bars along the bottom split cleanly in two.
 The quiet ones — icon, short label, muted subtitle — are facts. The dark bars with
@@ -294,7 +294,7 @@ than as a payload:
 Any single sequenced container — reel, stories, carousel — asserts that these are
 peers and that there is an order to move through them in. Both assertions are false,
 and both cost the shopper something. So each item declares where it belongs and the
-widget renders it there. ([ADR 0003](decisions/0003-declared-placement.md) covers the
+widget renders it there. ([ADR 0003](../engineering-decisions/0003-declared-placement.md) covers the
 mechanism and the fallback rule.)
 
 ### Why I rejected each named form
@@ -341,7 +341,7 @@ So the widget exposes **nine tokens** and nothing else:
 
 Small on purpose. A narrow contract is one that can be supported and reasoned about;
 an open one turns every internal styling decision into public API. Nine is enough to
-re-theme the widget completely — [stress page 03](../stress/03-dark-theme.html) does
+re-theme the widget completely — [stress page 03](../../stress/03-dark-theme.html) does
 exactly that, dark palette and Helvetica and 10px radius, and nothing structural
 changes.
 
@@ -370,8 +370,8 @@ It is also the only place the contrast gate *can* live. Custom properties are ap
 by the browser directly, so at that layer there is nothing to intercept; a
 configurator is the first point in the cascade where a value exists before it is used.
 That is also the argument for putting *inference* there later —
-[ADR 0002 →](decisions/0002-theming-and-native-feel.md) ·
-[ADR 0005 §7 →](decisions/0005-banner-blindness.md)
+[ADR 0002 →](../engineering-decisions/0002-theming-and-native-feel.md) ·
+[ADR 0005 §7 →](../engineering-decisions/0005-banner-blindness.md)
 
 ## 6. The rest of it, and how I checked
 
@@ -456,7 +456,7 @@ they installed.
 Two more pages re-run the first two hazards against a React build of the same widget,
 with the host page held constant so the build is the only variable. That is a
 measurement rather than coverage, and it is written up in
-[stress/README.md](../stress/README.md) — including the results that do not flatter
+[stress/README.md](../../stress/README.md) — including the results that do not flatter
 the choice I made.
 
 ---
@@ -485,8 +485,8 @@ consequences accepted:
 
 | | |
 |---|---|
-| [ADR 0001](decisions/0001-style-isolation.md) | Style isolation — why every surface gets its own shadow root |
-| [ADR 0002](decisions/0002-theming-and-native-feel.md) | Theming and native feel — the nine-token contract |
-| [ADR 0003](decisions/0003-declared-placement.md) | Declared placement — four surfaces, and the fallback rule |
-| [ADR 0004](decisions/0004-layout-from-the-measure.md) | Layout from the measure — why the columns break where they do |
-| [ADR 0005](decisions/0005-banner-blindness.md) | Banner blindness — why theming is an attention problem |
+| [ADR 0001](../engineering-decisions/0001-style-isolation.md) | Style isolation — why every surface gets its own shadow root |
+| [ADR 0002](../engineering-decisions/0002-theming-and-native-feel.md) | Theming and native feel — the nine-token contract |
+| [ADR 0003](../engineering-decisions/0003-declared-placement.md) | Declared placement — four surfaces, and the fallback rule |
+| [ADR 0004](../engineering-decisions/0004-layout-from-the-measure.md) | Layout from the measure — why the columns break where they do |
+| [ADR 0005](../engineering-decisions/0005-banner-blindness.md) | Banner blindness — why theming is an attention problem |

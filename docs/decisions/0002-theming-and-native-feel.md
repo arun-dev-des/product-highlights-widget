@@ -5,7 +5,14 @@
 - **Applies to:** The embeddable product highlights widget
 - **Related:** [ADR 0001 — Style isolation via Shadow DOM](./0001-style-isolation.md) ·
   [ADR 0003 — Declared placement](./0003-declared-placement.md) ·
-  [ADR 0004 — Layout from the measure](./0004-layout-from-the-measure.md)
+  [ADR 0004 — Layout from the measure](./0004-layout-from-the-measure.md) ·
+  [ADR 0005 — Banner blindness](./0005-banner-blindness.md)
+
+> **Revised by ADR 0005.** §3's claim that being off-brand is "a cosmetic cost"
+> is superseded: visual mismatch is what makes an injected widget read as an
+> advertisement, so it is an attention cost. That record also finds the crafted
+> defaults below to be a copy of the sample page rather than a neutral theme, and
+> relocates alternative A from runtime to the configurator.
 
 > **Implementation status.** Of the four cascade layers, the widget ships layer 2
 > (CSS custom properties) and layer 4 (crafted defaults). Layer 1 (a `theme`

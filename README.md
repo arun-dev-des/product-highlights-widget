@@ -25,7 +25,8 @@ them somewhere else entirely.
 | [`dev/harness.html`](dev/harness.html) | Twelve cases — every layout, content shape and failure mode, each stating what should be true |
 | [`stress/`](stress/) | Seven host pages built to break it. Findings, including the unflattering ones, in [stress/README.md](stress/README.md) |
 | [`react/`](react/) | The same widget on React 19 — a measurement, not the deliverable. [react/README.md](react/README.md) |
-| [`docs/decisions/`](docs/decisions/) | Four ADRs for the load-bearing choices |
+| [`docs/design-decisions.md`](docs/design-decisions.md) | **The design record.** The UX and UI reasoning in full — the shopper model, the forms I rejected, type, motion, space, and what is still thin |
+| [`docs/decisions/`](docs/decisions/) | Five ADRs for the load-bearing choices |
 
 ## Running it
 
@@ -176,6 +177,11 @@ where a value exists before it is used.
 
 ## Design decisions
 
+*The short version. The full record — the shopper model, why a reel and a
+stories sequence were rejected, the type scale, the motion budget, and the places
+the design is still thin — is in
+[docs/design-decisions.md](docs/design-decisions.md).*
+
 **The highlights go where the question is asked.**
 
 A shopper on a product page is not reading a feature list. They are working
@@ -275,6 +281,12 @@ the alternatives rejected, and the consequences accepted:
   Why the columns break where they do. The payload's titles run 12–24 characters
   and its bodies 65–80, and every track minimum, wrapping rule and withheld body
   is keyed to those numbers rather than to a grid chosen first.
+- [**ADR 0005 — Banner blindness and the visual seam**](docs/decisions/0005-banner-blindness.md)
+  The biggest UX risk in injecting anything into someone else's store: shoppers
+  filter what looks inserted before they read it. Why that makes theming an
+  attention problem rather than a cosmetic one, why the crafted defaults are the
+  wrong default, and why inference belongs in the configurator rather than in the
+  widget.
 
 ## With more time
 

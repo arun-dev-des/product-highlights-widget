@@ -5,7 +5,8 @@
 - **Applies to:** The embeddable product highlights widget
 - **Related:** [ADR 0001 — Style isolation](./0001-style-isolation.md) ·
   [ADR 0002 — Theming and native feel](./0002-theming-and-native-feel.md) ·
-  [ADR 0004 — Layout from the measure](./0004-layout-from-the-measure.md)
+  [ADR 0004 — Layout from the measure](./0004-layout-from-the-measure.md) ·
+  [ADR 0005 — Banner blindness](./0005-banner-blindness.md)
 
 ---
 

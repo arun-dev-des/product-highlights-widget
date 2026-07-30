@@ -4,7 +4,8 @@
 - **Date:** 2026-07-28
 - **Applies to:** The embeddable product highlights widget
 - **Related:** [ADR 0002 — Theming and native feel](./0002-theming-and-native-feel.md) ·
-  [ADR 0003 — Declared placement](./0003-declared-placement.md)
+  [ADR 0003 — Declared placement](./0003-declared-placement.md) ·
+  [ADR 0005 — Banner blindness](./0005-banner-blindness.md)
 
 ---
 

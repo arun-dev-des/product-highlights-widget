@@ -16,6 +16,9 @@ next.
 The widget provides data-driven information that helps them decide, and improves
 conversion for the merchant's store.
 
+**Conversion is the business here**, so that is what I designed for — not a visual
+treat.
+
 ## 2. The biggest risk is not that it looks bad. It is that it is never seen.
 
 The first threat I take seriously in this product is **banner blindness**.
@@ -126,9 +129,10 @@ being a guest who dressed for a different party.
 
 Which is why theming is not decoration in this product — it is the mechanism by which
 the widget stays readable at all. It is also why "make the unconfigured defaults
-neutral" is the first item in ADR 0005's queue rather than filed under polish: the widget
-currently ships the sample storefront's serif, hairline and radius as its defaults, so
-on every store that is not that one it asserts somebody else's design language.
+neutral" is the first item in ADR 0005's queue rather than filed under polish: the
+widget currently ships the sample storefront's serif, hairline and radius as its
+defaults, so on every store that is not that one it asserts somebody else's design
+language.
 
 Section 5 is the answer to the second table: nine tokens, and a configurator that sets
 them.
@@ -285,7 +289,7 @@ than as a payload:
 | Traceable merino | a claim about the object | on the product image |
 | Loved by 3,100+ buyers | social proof | somewhere it earns a moment |
 
-![Ditributed Placements](./images/distributed_layout.png)
+![The distributed placements on the mock storefront: the badge on the product image, the list beside the buy action, and the toast pinned to the viewport](./images/distributed_layout.png)
 
 Any single sequenced container — reel, stories, carousel — asserts that these are
 peers and that there is an order to move through them in. Both assertions are false,
@@ -454,6 +458,25 @@ with the host page held constant so the build is the only variable. That is a
 measurement rather than coverage, and it is written up in
 [stress/README.md](../stress/README.md) — including the results that do not flatter
 the choice I made.
+
+---
+
+## A note on all of this
+
+**None of it means design should be boring.**
+
+These are guiding principles, not laws, and every one of them is an answer to *this*
+problem: a component injected into a page somebody else owns, where standing out is
+the failure mode and the goal is conversion rather than admiration. Change the
+context and the answer changes with it. On a brand's own campaign page, a launch
+moment, or anywhere the design *is* the message, bold is the correct call and
+restraint would be the mistake.
+
+What matters is knowing which situation you are in, and knowing *why* a rule exists —
+because that is the only way to tell when it does not apply. The restraint in this
+document is a response to a constraint, not a house style.
+
+Given a page that wanted to be loud, I would make it loud.
 
 ## The records
 
